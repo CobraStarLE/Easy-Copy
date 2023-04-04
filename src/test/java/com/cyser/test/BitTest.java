@@ -3,6 +3,8 @@ package com.cyser.test;
 public class BitTest {
 
     public static void main(String[] args) {
-        System.out.println(""+(1>>>10));
+        int n = 4;
+        n = ~-n;
+        System.out.println(n);
     }
 }

@@ -2,13 +2,39 @@ plugins {
     id 'java'
 }
 
-group 'com.cyser.web'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
+
+
+group 'com.cyser.copy'
 version '1.0-SNAPSHOT'
+
+//打包源码
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.cyser'
+            artifactId = 'easy-copy'
+            version = '1.0'
+
+            from components.java
+
+            artifact sourcesJar
+        }
+    }
+}
+
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public/' }
-    maven { url 'https://maven.aliyun.com/repository/google/'}
-    maven { url 'https://maven.aliyun.com/repository/jcenter/'}
+    maven { url 'https://maven.aliyun.com/repository/google/' }
+    maven { url 'https://maven.aliyun.com/repository/jcenter/' }
     mavenLocal()
     mavenCentral()
 }
@@ -23,6 +49,7 @@ dependencies {
     implementation 'org.reflections:reflections:0.10.2'
     implementation 'com.esotericsoftware:reflectasm:1.11.9'
     implementation 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
 }
 
 test {

@@ -2,7 +2,7 @@ package com.cyser.test;
 
 public interface Cry {
 
-    String id="cry";
+    String id = "cry";
 
-    String cry="I am crying";
+    String cry = "I am crying";
 }

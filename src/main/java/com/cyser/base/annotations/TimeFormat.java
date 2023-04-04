@@ -9,5 +9,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface TimeFormat {
 
-    TimestampUtil.FastDateFormatPattern value() default TimestampUtil.FastDateFormatPattern.ISO_DATETIME_FORMAT;
+    TimestampUtil.FastDateFormatPattern value() default
+            TimestampUtil.FastDateFormatPattern.ISO_DATETIME_FORMAT;
 }

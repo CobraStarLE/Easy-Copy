@@ -18,5 +18,4 @@ public class Girl {
     public Date birth;
 
 
-
 }

@@ -16,8 +16,7 @@ import java.util.*;
 
 public class ClassUtil {
 
-    private ClassUtil() {
-    }
+    private ClassUtil() {}
 
     /**
      * 获取可序列化字段
@@ -26,7 +25,7 @@ public class ClassUtil {
      * @return
      */
     public static List<Field> getSerializableFields(Class clazz) {
-        List<Field> fields = Lists.newArrayList(getAllFieldsMap(clazz).values());//目标类所有字段
+        List<Field> fields = Lists.newArrayList(getAllFieldsMap(clazz).values()); // 目标类所有字段
         return getSerializableFields(fields);
     }
 
@@ -39,15 +38,22 @@ public class ClassUtil {
     public static List<Field> getSerializableFields(Collection<Field> fields) {
         List<Field> list = new ArrayList<>();
         for (Field field : fields) {
-            if (isSerializableField(field))
-                list.add(field);
+            if (isSerializableField(field)) list.add(field);
         }
         return list;
     }
 
+    /**
+     * 判断字段是否可序列化
+     *
+     * @param field
+     * @return true:可序列化 <br>
+     * false:不可序列化
+     */
     public static boolean isSerializableField(Field field) {
         boolean t1 = field.getAnnotation(Transient.class) != null;
-        boolean t2 = Modifier.isTransient(field.getModifiers())
+        boolean t2 =
+                Modifier.isTransient(field.getModifiers())
                 || Modifier.isStatic(field.getModifiers())
                 || Modifier.isFinal(field.getModifiers());
 
@@ -56,6 +62,7 @@ public class ClassUtil {
 
     /**
      * 获取一个类所有的声明字段(包含超类)
+     *
      * <p><b>Note:</b>如果类中包含与超类相同名称的字段，则返回该类中字段
      *
      * @param clazz
@@ -67,8 +74,7 @@ public class ClassUtil {
         while (currentClass != null) {
             final Field[] declaredFields = currentClass.getDeclaredFields();
             for (Field field : declaredFields) {
-                if (!map.containsKey(field.getName()))
-                    map.put(field.getName(), field);
+                if (!map.containsKey(field.getName())) map.put(field.getName(), field);
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -77,6 +83,7 @@ public class ClassUtil {
 
     /**
      * 获取一个类所有的声明字段(包含超类)
+     *
      * <p><b>Note:</b>如果类中包含与超类相同名称的字段，则返回该类中字段
      *
      * @param clazz
@@ -88,8 +95,7 @@ public class ClassUtil {
         while (currentClass != null) {
             final Field[] declaredFields = currentClass.getDeclaredFields();
             for (Field field : declaredFields) {
-                if (!map.containsKey(field.getName()))
-                    map.put(field.getName(), field);
+                if (!map.containsKey(field.getName())) map.put(field.getName(), field);
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -102,9 +108,11 @@ public class ClassUtil {
      * @param cls
      * @param toClass
      * @param autoboxing
-     * @return
+     * @return true:可分配 <br>
+     * false:不可分配
      */
-    public static boolean isAssignable(final Class<?> cls, final Class<?> toClass, final boolean autoboxing) {
+    public static boolean isAssignable(
+            final Class<?> cls, final Class<?> toClass, final boolean autoboxing) {
         if (toClass == null) {
             return false;
         }
@@ -123,13 +131,13 @@ public class ClassUtil {
             return true;
         }
         if (_cls.isAssignableFrom(String.class)
-                && ClassUtils.isPrimitiveOrWrapper(_toClass)
-                && (!(Void.TYPE.equals(_toClass) || Boolean.TYPE.equals(_toClass)))) {
+            && ClassUtils.isPrimitiveOrWrapper(_toClass)
+            && (!(Void.TYPE.equals(_toClass) || Boolean.TYPE.equals(_toClass)))) {
             return true;
         }
         if (_toClass.isAssignableFrom(String.class)
-                && ClassUtils.isPrimitiveOrWrapper(_cls)
-                && (!(Void.TYPE.equals(_cls) || Boolean.TYPE.equals(_cls)))) {
+            && ClassUtils.isPrimitiveOrWrapper(_cls)
+            && (!(Void.TYPE.equals(_cls) || Boolean.TYPE.equals(_cls)))) {
             return true;
         }
         return ClassUtils.isAssignable(_cls, _toClass, autoboxing);
@@ -145,13 +153,12 @@ public class ClassUtil {
         Type type = field.getType();
         Type generic_type = field.getGenericType();
         FieldDefinition fd = new FieldDefinition();
-        if (!field.isAccessible())
-            field.setAccessible(true);
+        if (!field.isAccessible()) field.setAccessible(true);
         fd.field = field;
         fd.type = type;
         fd.genericType = generic_type;
         fd.raw_Type_class = ClassUtils.getClass(type.getTypeName());
-        //如果是泛型
+        // 如果是泛型
         if (generic_type instanceof ParameterizedType) {
             fd.isGeneric = true;
             Type[] param_types = ((ParameterizedType) generic_type).getActualTypeArguments();
@@ -161,26 +168,24 @@ public class ClassUtil {
             }
             fd.parameter_Type_classes = parameter_Type_classes;
         }
-        //判断是否是基本类型
+        // 判断是否是基本类型
         fd.isPrimitive = fd.raw_Type_class.isPrimitive();
-        //判断是否是基本封装类型
+        // 判断是否是基本封装类型
         fd.isPrimitiveWrapper = ClassUtils.isPrimitiveWrapper(fd.raw_Type_class);
-        //判断是否是基本类型或者基本封装类型
+        // 判断是否是基本类型或者基本封装类型
         fd.isPrimitiveOrWrapper = fd.isPrimitive || fd.isPrimitiveWrapper;
-        //判断是否是日期字段
+        // 判断是否是日期字段
         if (ClassUtils.isAssignable(fd.raw_Type_class, LocalDate.class)
-                || ClassUtils.isAssignable(fd.raw_Type_class, LocalDateTime.class)
-                || ClassUtils.isAssignable(fd.raw_Type_class, Date.class)
-                || (ClassUtils.isAssignable(fd.raw_Type_class, String.class) && field.getAnnotation(TimeFormat.class) != null)) {
+            || ClassUtils.isAssignable(fd.raw_Type_class, LocalDateTime.class)
+            || ClassUtils.isAssignable(fd.raw_Type_class, Date.class)
+            || (ClassUtils.isAssignable(fd.raw_Type_class, String.class)
+                && field.getAnnotation(TimeFormat.class) != null)) {
             fd.isTime = true;
             TimeFormat timeFormat = field.getAnnotation(TimeFormat.class);
-            if (timeFormat != null)
-                fd.timeFormat = timeFormat.value();
+            if (timeFormat != null) fd.timeFormat = timeFormat.value();
         }
-        //判断是否是可序列化字段
-        if (!isSerializableField(field))
-            fd.isSerializable = false;
+        // 判断是否是可序列化字段
+        if (!isSerializableField(field)) fd.isSerializable = false;
         return fd;
     }
-
 }

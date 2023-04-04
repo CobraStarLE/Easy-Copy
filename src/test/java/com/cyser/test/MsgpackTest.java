@@ -8,8 +8,7 @@ import java.io.IOException;
 
 public class MsgpackTest {
 
-    private static String join(String[] in)
-    {
+    private static String join(String[] in) {
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < in.length; ++i) {
             if (i > 0) {
@@ -22,7 +21,8 @@ public class MsgpackTest {
 
     public static void main(String[] args) throws IOException {
         MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
-        packer.packInt(1)
+        packer
+                .packInt(1)
                 .packString("leo")
                 .packArrayHeader(2)
                 .packString("xxx-xxxx")
@@ -31,15 +31,15 @@ public class MsgpackTest {
 
         // Deserialize with MessageUnpacker
         MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray());
-        int id = unpacker.unpackInt();             // 1
-        String name = unpacker.unpackString();     // "leo"
-        int numPhones = unpacker.unpackArrayHeader();  // 2
+        int id = unpacker.unpackInt(); // 1
+        String name = unpacker.unpackString(); // "leo"
+        int numPhones = unpacker.unpackArrayHeader(); // 2
         String[] phones = new String[numPhones];
         for (int i = 0; i < numPhones; ++i) {
-            phones[i] = unpacker.unpackString();   // phones = {"xxx-xxxx", "yyy-yyyy"}
+            phones[i] = unpacker.unpackString(); // phones = {"xxx-xxxx", "yyy-yyyy"}
         }
         unpacker.close();
 
-        System.out.println(String.format("id:%d, name:%s, phone:[%s]", id, name, join(phones)));
+        System.out.printf("id:%d, name:%s, phone:[%s]%n", id, name, join(phones));
     }
 }

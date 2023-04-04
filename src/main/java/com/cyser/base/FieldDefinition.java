@@ -52,17 +52,27 @@ public class FieldDefinition {
 
     @Override
     public String toString() {
-        return "FieldDefinition{" +
-                "field=" + field +
-                ", type=" + type +
-                ", genericType=" + genericType +
-                ", raw_Type_class=" + raw_Type_class +
-                ", parameter_Type_classes=" + Arrays.toString(parameter_Type_classes) +
-                ", isGeneric=" + isGeneric +
-                ", isPrimitive=" + isPrimitive +
-                ", isPrimitiveWrapper=" + isPrimitiveWrapper +
-                ", isTime=" + isTime +
-                ", isSerializable=" + isSerializable +
-                '}';
+        return "FieldDefinition{"
+               + "field="
+               + field
+               + ", type="
+               + type
+               + ", genericType="
+               + genericType
+               + ", raw_Type_class="
+               + raw_Type_class
+               + ", parameter_Type_classes="
+               + Arrays.toString(parameter_Type_classes)
+               + ", isGeneric="
+               + isGeneric
+               + ", isPrimitive="
+               + isPrimitive
+               + ", isPrimitiveWrapper="
+               + isPrimitiveWrapper
+               + ", isTime="
+               + isTime
+               + ", isSerializable="
+               + isSerializable
+               + '}';
     }
 }

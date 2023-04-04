@@ -13,12 +13,12 @@ import java.util.TimeZone;
 
 public class TimestampUtil {
 
-    private TimestampUtil() {
-    }
+    private TimestampUtil() {}
 
     /**
      * 得到Unix时间戳，精确到毫秒
-     * <p>如果参数为空，则获取当前时间</p>
+     *
+     * <p>如果参数为空，则获取当前时间
      *
      * @param localDateTimes
      * @return
@@ -29,9 +29,9 @@ public class TimestampUtil {
         return getUnixTimeStamp(zoneId, localDateTime);
     }
 
-    public static Long getUnixTimeStamp(Date date,ZoneId ...zoneIds) {
+    public static Long getUnixTimeStamp(Date date, ZoneId... zoneIds) {
         ZoneId zoneId = getZoneId(zoneIds);
-        LocalDateTime localDateTime =toLocalDateTime(date,zoneId);
+        LocalDateTime localDateTime = toLocalDateTime(date, zoneId);
         return getUnixTimeStamp(zoneId, localDateTime);
     }
 
@@ -39,7 +39,8 @@ public class TimestampUtil {
         return getUnixTimeStamp(ld, 0, 0, 0, zoneIds);
     }
 
-    public static Long getUnixTimeStamp(LocalDate ld, int hour, int minute, int second, ZoneId... zoneIds) {
+    public static Long getUnixTimeStamp(
+            LocalDate ld, int hour, int minute, int second, ZoneId... zoneIds) {
         ZoneId zoneId = getZoneId(zoneIds);
         LocalDateTime localDateTime = toLocalDateTime(ld, hour, minute, second);
         return getUnixTimeStamp(zoneId, localDateTime);
@@ -54,10 +55,10 @@ public class TimestampUtil {
     /**
      * 得到Unix时间戳，精确到毫秒
      *
-     * @param timeMode             如果指定timeMode，则会对sourceLocalDateTime的时分秒重写,<p>
-     *                             支持         ZERO_ZERO-00:00:00<p>
-     *                             TWENTY_THREE-23:59:59<p>
-     *                             CURRENT-当前时间,如果为null，默认为当前的时间
+     * @param timeMode             如果指定timeMode，则会对sourceLocalDateTime的时分秒重写,
+     *                             <p>支持 ZERO_ZERO-00:00:00
+     *                             <p>TWENTY_THREE-23:59:59
+     *                             <p>CURRENT-当前时间,如果为null，默认为当前的时间
      * @param sourceLocalDateTimes 指定的时间,如果为null,则为当前时间
      * @return
      */
@@ -67,19 +68,17 @@ public class TimestampUtil {
         return getUnixTimeStamp(targetLocalDateTime);
     }
 
-
     public static Long getUnixTimeStamp(
-            int year, int month, int day, int hour, int minute, int second,
-            ZoneId... zoneIds) {
+            int year, int month, int day, int hour, int minute, int second, ZoneId... zoneIds) {
         LocalDateTime ldt = getLocalDateTime(year, month, day, hour, minute, second, zoneIds);
         return getUnixTimeStamp(ldt);
     }
 
-    public static Long getUnixTimeStamp(int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
+    public static Long getUnixTimeStamp(
+            int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
         LocalDateTime ldt = getLocalDateTime(year, month, day, timeMode, zoneIds);
         return getUnixTimeStamp(ldt);
     }
-
 
     /**
      * 判断指定的时间是否是在当天之中
@@ -104,7 +103,8 @@ public class TimestampUtil {
      * @param isEndTimeClosure 结束时间是否闭合，如果true,则比较time<=endTime,否则比较time < endTime，默认为true
      * @return true: 是 ，false:否
      */
-    public static boolean during(long time, long startTime, long endTime, boolean... isEndTimeClosure) {
+    public static boolean during(
+            long time, long startTime, long endTime, boolean... isEndTimeClosure) {
         boolean endTimeClosure = true;
         if (ObjectUtils.isNotEmpty(isEndTimeClosure)) {
             endTimeClosure = isEndTimeClosure[0];
@@ -113,7 +113,8 @@ public class TimestampUtil {
             if (time >= startTime && time <= endTime) {
                 return true;
             }
-        } else {
+        }
+        else {
             if (time >= startTime && time < endTime) {
                 return true;
             }
@@ -134,7 +135,6 @@ public class TimestampUtil {
         Long endTime = getUnixTimeStamp(tomorrowZeroLDT);
         return endTime - startTime;
     }
-
 
     /**
      * 把Unix时间戳转为时间格式字符串
@@ -159,10 +159,11 @@ public class TimestampUtil {
      * @param patterns
      * @return
      */
-    public static Long getUnixTimeStamp(String formatTimeStr, TimeMode timeMode, FastDateFormatPattern... patterns) throws ParseException {
+    public static Long getUnixTimeStamp(
+            String formatTimeStr, TimeMode timeMode, FastDateFormatPattern... patterns)
+            throws ParseException {
         FastDateFormatPattern pattern = getFastDateFormatPattern(patterns);
-        if (pattern == FastDateFormatPattern.PURE_DATETIME_PATTERN)
-            return Long.valueOf(formatTimeStr);
+        if (pattern == FastDateFormatPattern.PURE_DATETIME_PATTERN) return Long.valueOf(formatTimeStr);
         LocalDateTime ldt = toLocalDateTime(formatTimeStr, patterns);
         return getUnixTimeStamp(timeMode, ldt);
     }
@@ -213,8 +214,9 @@ public class TimestampUtil {
     }
 
     /**
-     * 如果 localDateTimes不为空，则返回localDateTimes[0],<p>
-     * 否则返回指定ZoneId的当前时间
+     * 如果 localDateTimes不为空，则返回localDateTimes[0],
+     *
+     * <p>否则返回指定ZoneId的当前时间
      *
      * @param zoneId         如果为空，则默认为时区UTC+8
      * @param localDateTimes
@@ -231,7 +233,8 @@ public class TimestampUtil {
         return LocalDateTime.now(zoneId);
     }
 
-    public static LocalDateTime getLocalDateTime(int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
+    public static LocalDateTime getLocalDateTime(
+            int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
         ZoneId zoneId = getZoneId(zoneIds);
         Calendar calendar = getCalendar(zoneId);
         setYYYYMMDD(calendar, year, month, day);
@@ -240,8 +243,7 @@ public class TimestampUtil {
     }
 
     public static LocalDateTime getLocalDateTime(
-            int year, int month, int day, int hour, int minute, int second,
-            ZoneId... zoneIds) {
+            int year, int month, int day, int hour, int minute, int second, ZoneId... zoneIds) {
         ZoneId zoneId = getZoneId(zoneIds);
         Calendar calendar = getCalendar(zoneId);
         setYYYYMMDD(calendar, year, month, day);
@@ -259,7 +261,8 @@ public class TimestampUtil {
         ZoneId zoneId;
         if (zoneIds == null || zoneIds.length == 0) {
             zoneId = getZoneId();
-        } else {
+        }
+        else {
             zoneId = zoneIds[0];
         }
         return getLocalDateTime(zoneId);
@@ -275,7 +278,8 @@ public class TimestampUtil {
         ZoneId zoneId;
         if (zoneIds == null || zoneIds.length == 0) {
             zoneId = getZoneId();
-        } else {
+        }
+        else {
             zoneId = zoneIds[0];
         }
         LocalDateTime currLDT = getLocalDateTime(zoneId);
@@ -299,7 +303,8 @@ public class TimestampUtil {
         FastDateFormatPattern pattern;
         if (patterns == null || patterns.length == 0) {
             pattern = FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT;
-        } else {
+        }
+        else {
             pattern = patterns[0];
         }
         return pattern;
@@ -309,9 +314,9 @@ public class TimestampUtil {
      * 根据指定的时间模式设置时分秒
      *
      * @param localDateTime
-     * @param timeMode      ZERO_ZERO-00:00:00<p>
-     *                      TWENTY_THREE-23:59:59<p>
-     *                      CURRENT-当前时间,如果为null，默认为当前的时间
+     * @param timeMode      ZERO_ZERO-00:00:00
+     *                      <p>TWENTY_THREE-23:59:59
+     *                      <p>CURRENT-当前时间,如果为null，默认为当前的时间
      */
     public static LocalDateTime setHHmmss(LocalDateTime localDateTime, TimeMode... timeMode) {
         if (localDateTime != null) {
@@ -324,7 +329,6 @@ public class TimestampUtil {
             }
         }
         return localDateTime;
-
     }
 
     /**
@@ -334,7 +338,8 @@ public class TimestampUtil {
      * @param months
      * @return
      */
-    public static LocalDateTime getPlusMonth(LocalDateTime localDateTime, int months, TimeMode... timeMode) {
+    public static LocalDateTime getPlusMonth(
+            LocalDateTime localDateTime, int months, TimeMode... timeMode) {
         ZoneId zoneId = getZoneId();
         Calendar calendar = toCalendar(localDateTime, zoneId);
         calendar.add(Calendar.MONTH, months);
@@ -351,7 +356,8 @@ public class TimestampUtil {
      * @param years
      * @return
      */
-    public static LocalDateTime getPlusYear(LocalDateTime localDateTime, int years, TimeMode... timeMode) {
+    public static LocalDateTime getPlusYear(
+            LocalDateTime localDateTime, int years, TimeMode... timeMode) {
         ZoneId zoneId = getZoneId();
         Calendar calendar = toCalendar(localDateTime, zoneId);
         calendar.add(Calendar.YEAR, years);
@@ -368,7 +374,8 @@ public class TimestampUtil {
      * @param days
      * @return
      */
-    public static LocalDateTime getPlusDay(LocalDateTime localDateTime, int days, TimeMode... timeMode) {
+    public static LocalDateTime getPlusDay(
+            LocalDateTime localDateTime, int days, TimeMode... timeMode) {
         ZoneId zoneId = getZoneId();
         Calendar calendar = toCalendar(localDateTime, zoneId);
         calendar.add(Calendar.DATE, days);
@@ -393,27 +400,27 @@ public class TimestampUtil {
     }
 
     /**
-     * 修改日期时间上的字段，比如把1992-03-27设置成2000-03-27就可以如下调用:
-     * <br></br>
-     * {@code LocalDateTime ldt=TimestampUtil.getLocalDateTime(1992,3,27,0,0,0);}
-     * * <br></br>
-     * {@code  TimestampUtil.setDateTimeField(old_ldt, Calendar.YEAR,2000);}
-     * * <br></br>
-     * {@code   System.out.println(TimestampUtil.format(ldt, TimestampUtil.FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT));//输出2000-03-27 00:00:00}
+     * 修改日期时间上的字段，比如把1992-03-27设置成2000-03-27就可以如下调用: <br>
+     * </br> {@code LocalDateTime ldt=TimestampUtil.getLocalDateTime(1992,3,27,0,0,0);} * <br>
+     * </br> {@code TimestampUtil.setDateTimeField(old_ldt, Calendar.YEAR,2000);} * <br>
+     * </br> {@code System.out.println(TimestampUtil.format(ldt,
+     * TimestampUtil.FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT));//输出2000-03-27 00:00:00}
      *
      * @param localDateTime
      * @param calendarField
      * @param amount
      * @return
      */
-    public static LocalDateTime setDateTimeField(LocalDateTime localDateTime, final int calendarField, final int amount) {
+    public static LocalDateTime setDateTimeField(
+            LocalDateTime localDateTime, final int calendarField, final int amount) {
         ZoneId zoneId = getZoneId();
         Calendar calendar = toCalendar(localDateTime, zoneId);
         calendar.set(calendarField, amount);
         return toLocalDateTime(calendar, zoneId);
     }
 
-    public static Long setDateTimeField(Long unixTimestamp, final int calendarField, final int amount) {
+    public static Long setDateTimeField(
+            Long unixTimestamp, final int calendarField, final int amount) {
         ZoneId zoneId = getZoneId();
         Calendar calendar = toCalendar(unixTimestamp);
         calendar.set(calendarField, amount);
@@ -435,7 +442,6 @@ public class TimestampUtil {
         return c;
     }
 
-
     public static Calendar getCalendar(ZoneId zoneId) {
         return Calendar.getInstance(TimeZone.getTimeZone(zoneId));
     }
@@ -448,14 +454,16 @@ public class TimestampUtil {
      * @param patterns
      * @return
      */
-    public static LocalDateTime toLocalDateTime(String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns) throws ParseException {
-        FastDateFormatPattern pattern=getFastDateFormatPattern(patterns);
+    public static LocalDateTime toLocalDateTime(
+            String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns)
+            throws ParseException {
+        FastDateFormatPattern pattern = getFastDateFormatPattern(patterns);
         LocalDateTime ldt;
         DateTimeFormatter df = DateTimeFormatter.ofPattern(pattern.getFormatPattern());
         // 当格式为年月日时，特殊处理为年月日时分秒格式
         switch (pattern) {
             case PURE_UNIX_TIME_FORMAT:
-                ldt=toLocalDateTime(Long.valueOf(formatTimeStr),zoneId);
+                ldt = toLocalDateTime(Long.valueOf(formatTimeStr), zoneId);
                 break;
             case ISO_DATE_FORMAT:
             case PURE_DATE_FORMAT:
@@ -481,7 +489,8 @@ public class TimestampUtil {
      * @param patterns
      * @return
      */
-    public static LocalDateTime toLocalDateTime(String formatTimeStr, FastDateFormatPattern... patterns) throws ParseException {
+    public static LocalDateTime toLocalDateTime(
+            String formatTimeStr, FastDateFormatPattern... patterns) throws ParseException {
         return toLocalDateTime(formatTimeStr, getZoneId(), patterns);
     }
 
@@ -502,12 +511,14 @@ public class TimestampUtil {
         return ld.atTime(hour, minute, second);
     }
 
-    public static Date toDate(String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns) throws ParseException {
+    public static Date toDate(String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns)
+            throws ParseException {
         LocalDateTime ldt = toLocalDateTime(formatTimeStr, zoneId, patterns);
         return toDate(ldt, zoneId);
     }
 
-    public static Date toDate(String formatTimeStr, FastDateFormatPattern... patterns) throws ParseException {
+    public static Date toDate(String formatTimeStr, FastDateFormatPattern... patterns)
+            throws ParseException {
         return toDate(formatTimeStr, getZoneId(), patterns);
     }
 
@@ -532,7 +543,9 @@ public class TimestampUtil {
         return toDate(ldt, zoneIds);
     }
 
-    public static LocalDate toLocalDate(String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns) throws ParseException {
+    public static LocalDate toLocalDate(
+            String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns)
+            throws ParseException {
         LocalDateTime ldt = toLocalDateTime(formatTimeStr, zoneId, patterns);
         return ldt.toLocalDate();
     }
@@ -542,7 +555,8 @@ public class TimestampUtil {
         return ldt.toLocalDate();
     }
 
-    public static LocalDate toLocalDate(String formatTimeStr, FastDateFormatPattern... patterns) throws ParseException {
+    public static LocalDate toLocalDate(String formatTimeStr, FastDateFormatPattern... patterns)
+            throws ParseException {
         return toLocalDate(formatTimeStr, getZoneId(), patterns);
     }
 
@@ -565,14 +579,13 @@ public class TimestampUtil {
         return format(localDateTime, pattern);
     }
 
-
     /**
      * 根据指定的时间模式设置时分秒
      *
      * @param calendar
-     * @param timeMode ZERO_ZERO-00:00:00<p>
-     *                 TWENTY_THREE-23:59:59<p>
-     *                 CURRENT-当前时间,如果为null，默认为当前的时间
+     * @param timeMode ZERO_ZERO-00:00:00
+     *                 <p>TWENTY_THREE-23:59:59
+     *                 <p>CURRENT-当前时间,如果为null，默认为当前的时间
      */
     private static void setHHmmss(Calendar calendar, TimeMode timeMode) {
         switch (timeMode) {
@@ -590,7 +603,8 @@ public class TimestampUtil {
     /**
      * 根据指定的时分秒设置时分秒
      */
-    public static LocalDateTime setHHmmss(LocalDateTime localDateTime, int hour, int minute, int second, int millisecond) {
+    public static LocalDateTime setHHmmss(
+            LocalDateTime localDateTime, int hour, int minute, int second, int millisecond) {
         ZoneId zoneId = getZoneId();
         Calendar calendar = toCalendar(localDateTime, zoneId);
         calendar.set(Calendar.HOUR_OF_DAY, hour);
@@ -613,7 +627,8 @@ public class TimestampUtil {
     /**
      * 根据指定的年月日设置年月日
      */
-    public static LocalDateTime setYYYYMMDD(LocalDateTime localDateTime, int year, int month, int day) {
+    public static LocalDateTime setYYYYMMDD(
+            LocalDateTime localDateTime, int year, int month, int day) {
         ZoneId zoneId = getZoneId();
         Calendar calendar = toCalendar(localDateTime, zoneId);
         calendar.set(Calendar.YEAR, year);
@@ -621,7 +636,6 @@ public class TimestampUtil {
         calendar.set(Calendar.DATE, day);
         return toLocalDateTime(calendar, zoneId);
     }
-
 
     /**
      * 根据指定的年月日设置年月日
@@ -633,9 +647,11 @@ public class TimestampUtil {
     }
 
     /**
-     * ZERO_ZERO-00:00:00<p>
-     * TWENTY_THREE-23:59:59<p>
-     * CURRENT-当前时间,如果为null，默认为当前的时间
+     * ZERO_ZERO-00:00:00
+     *
+     * <p>TWENTY_THREE-23:59:59
+     *
+     * <p>CURRENT-当前时间,如果为null，默认为当前的时间
      */
     public enum TimeMode {
         ZERO_ZERO,
@@ -644,7 +660,6 @@ public class TimestampUtil {
     }
 
     public enum FastDateFormatPattern {
-
         PURE_UNIX_TIME_FORMAT("11111111111"),
 
         ISO_DATETIME_FORMAT("yyyy-MM-dd'T'HH:mm:ss"),
@@ -674,7 +689,6 @@ public class TimestampUtil {
         PURE_DATE_FORMAT("yyyyMMdd"),
         CN_DATE_FORMAT("yyyy年MM月dd日");
 
-
         private String formatPattern;
 
         FastDateFormatPattern(String formatPattern) {
@@ -685,5 +699,4 @@ public class TimestampUtil {
             return formatPattern;
         }
     }
-
 }
