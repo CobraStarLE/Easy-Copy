@@ -7,11 +7,16 @@
           <map>
             <entry key="com.zeroturnaround.jrebel.FormatVersion" value="7.0.0" />
             <entry key="jrebelEnabled" value="true" />
-            <entry key="lastExternalPluginCheckTime" value="1680525830634" />
+            <entry key="lastExternalPluginCheckTime" value="1690772530279" />
+            <entry key="rebelXmlGenerationInvariantToken" value="PGFwcGxpY2F0aW9uIGdlbmVyYXRlZC1ieT0iaW50ZWxsaWoiPjxpZD5FYXN5LUNvcHk8L2lkPjxjbGFzc3BhdGg+PGRpciBuYW1lPSIvVm9sdW1lcy9wcm9qZWN0cy9zdHVkeS9jeXNlci9vdXQvcHJvZHVjdGlvbi9FYXN5LUNvcHkiPjwvZGlyPjwvY2xhc3NwYXRoPjwvYXBwbGljYXRpb24+" />
           </map>
         </option>
-        <option name="version" value="4" />
+        <option name="version" value="15" />
       </configuration>
     </facet>
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

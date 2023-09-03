@@ -2,19 +2,23 @@ package com.cyser.test.type;
 
 import java.lang.reflect.*;
 import java.util.List;
+import java.util.Map;
 
 public class GeneticTypeTest<T> {
 
     // 这里面有各种各样的数组：各有不同 方便看测试效果
     // 含有泛型数组的才是GenericArrayType
     public void testGenericArrayType(
-            List<String>[] pTypeArray,
-            T[] vTypeArray,
-            List<String> list,
-            List<T> typeVariableList,
-            List<? extends Number> wildcardList,
-            String[] strings,
-            GeneticTypeTest[] test) {}
+            List<String>[] pTypeArray, //GenericArrayType
+            T[] vTypeArray,//GenericArrayType
+            List<String> list,//ParameterizedType
+            List<T> typeVariableList,//ParameterizedType
+            List<? extends Number> wildcardList,//ParameterizedType
+            String[] strings,//Class
+            GeneticTypeTest[] test,//Class
+            Integer age, //Class
+            Map.Entry<String, String> entry
+    ) {}
 
     public static void main(String[] args) {
         Method[] declaredMethods = GeneticTypeTest.class.getDeclaredMethods();
@@ -74,6 +78,7 @@ public class GeneticTypeTest<T> {
                     System.out.println("TypeVariable type [typeVariable]:" + typeVariable);
                 }
                 if (type instanceof Class clazz) {
+                    System.out.println(clazz.getName()+"是否是数组："+clazz.isArray());
                     System.out.println("type [strings test]: " + clazz);
                 }
             }

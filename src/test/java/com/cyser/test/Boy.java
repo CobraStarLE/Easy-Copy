@@ -1,5 +1,7 @@
 package com.cyser.test;
 
+import com.cyser.base.annotations.EnumFormat;
+import com.cyser.base.enums.BaseEnum;
 import lombok.Data;
 
 import java.lang.reflect.ParameterizedType;
@@ -10,6 +12,7 @@ import java.util.List;
 @Data
 public class Boy extends Sex {
 
+    @EnumFormat(enum_class= BaseEnum.class,field_from="",field_local = "")
     private String name;
 
     public <E extends Boy> void test1(E e) {

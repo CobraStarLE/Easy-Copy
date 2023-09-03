@@ -2,7 +2,7 @@ package com.cyser.test;
 
 import com.esotericsoftware.kryo.Kryo;
 import org.apache.commons.lang3.ClassUtils;
-import org.springframework.core.ResolvableType;
+//import org.springframework.core.ResolvableType;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -74,9 +74,9 @@ public class KryoTest {
 
         Object obj = list;
 
-        ResolvableType type = ResolvableType.forInstance(obj);
-        ResolvableType super_type = type.getSuperType();
-        Type r = super_type.getType();
+//        ResolvableType type = ResolvableType.forInstance(obj);
+//        ResolvableType super_type = type.getSuperType();
+//        Type r = super_type.getType();
 
         Kryo kryo = new Kryo();
         kryo.register(User.class);
