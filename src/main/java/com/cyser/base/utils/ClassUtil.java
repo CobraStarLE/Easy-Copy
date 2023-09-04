@@ -7,12 +7,11 @@ import com.cyser.base.annotations.TimeFormat;
 import com.cyser.base.enums.TypeEnum;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 
-import javax.persistence.Transient;
+import java.beans.Transient;
 import java.lang.reflect.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

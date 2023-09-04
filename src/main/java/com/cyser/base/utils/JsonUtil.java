@@ -113,7 +113,7 @@ public class JsonUtil {
 
     public static Map<String, String> json2Map(String json) {
         try {
-            TypeReference<HashMap<String, String>> typeRef = new TypeReference<>() {};
+            TypeReference<HashMap<String, String>> typeRef = new TypeReference<HashMap<String, String>>() {};
             return mapper.readValue(json, typeRef);
         } catch (JsonProcessingException e) {
             log.error(ExceptionUtils.getStackTrace(e));
