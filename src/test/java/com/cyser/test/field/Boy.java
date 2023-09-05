@@ -1,7 +1,7 @@
 package com.cyser.test.field;
 
-import com.cyser.base.bean.Copyable;
 import com.cyser.base.annotations.TimeFormat;
+import com.cyser.base.bean.Copyable;
 import com.cyser.base.utils.TimestampUtil;
 
 import java.util.List;

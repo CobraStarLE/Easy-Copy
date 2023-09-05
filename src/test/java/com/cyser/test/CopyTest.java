@@ -10,8 +10,11 @@ public class CopyTest {
 
     private static void test1() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         Cat cat1=new Cat();
-        Cat cat2=new Cat();
-        BeanUtil.copy(cat2, cat1, new TypeReference<Cat<Object>>() {},new TypeReference<Cat<Object>>() {});
+        Boy cat2=new Boy();
+
+        cat1.name="小强";
+        BeanUtil.copy(cat2, cat1, new TypeReference<Boy>() {},new TypeReference<Cat<Object>>() {});
+        System.out.println();
     }
     public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         test1();

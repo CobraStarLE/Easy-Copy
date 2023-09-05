@@ -1,6 +1,5 @@
 package com.cyser.test.type;
 
-import com.cyser.base.bean.ClassDefinition;
 import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.cache.CopyableFieldsCache;
 import com.cyser.base.utils.ClassUtil;

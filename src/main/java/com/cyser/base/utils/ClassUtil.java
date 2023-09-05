@@ -298,6 +298,7 @@ public class ClassUtil {
         } else if (td.class_type == ClassTypeEnum.TypeVariable) {
             td.isGeneric = false;
         }
+        td.data_type=DataTypeEnum.valueOf(td.runtime_class);
         return td;
     }
 

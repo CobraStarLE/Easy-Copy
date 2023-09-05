@@ -465,7 +465,9 @@ public class BeanUtil {
         }
 
         PentaFunction<Object, Object, TypeDefinition, TypeDefinition, CopyParam, Object> copy_opera= BeanConvertCache.bean_method_table.get(dest_type_def.data_type,src_type_def.data_type);
-        target=copy_opera.apply(target,source,dest_type_def,src_type_def,cp);
+        if (copy_opera != null) {
+            target=copy_opera.apply(target,source,dest_type_def,src_type_def,cp);
+        }
 
         return target;
     }

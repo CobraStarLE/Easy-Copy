@@ -73,7 +73,7 @@ public class BeanConvertCache {
 
                     // 获取源对象字段
                     Map<String, FieldDefinition> serial_src_fd_map =
-                            CopyableFieldsCache.getSerialFieldDefinitions(src_clazz);
+                            CopyableFieldsCache.getSerialFieldDefinitions(src_def);
                     Collection<FieldDefinition> serial_src_fd_list; // 源对象所有可序列化字段
                     if (serial_src_fd_map.size() == 0) {
                         log.warn("源对象的可序列化字段为空，停止复制！");

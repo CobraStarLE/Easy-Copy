@@ -3,10 +3,12 @@ package com.cyser.test.type;
 import com.cyser.base.param.CopyParam;
 import com.cyser.base.utils.BeanUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.checkerframework.checker.units.qual.C;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class CopyTest {
 

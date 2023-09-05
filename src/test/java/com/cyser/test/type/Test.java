@@ -1,7 +1,5 @@
 package com.cyser.test.type;
 
-import com.cyser.base.bean.ClassDefinition;
-import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.utils.ClassUtil;
 import com.cyser.test.Boy;
 import com.cyser.test.Sex;
