@@ -1,17 +1,14 @@
-package com.cyser.base;
+package com.cyser.base.bean;
 
-import com.cyser.base.enums.TypeEnum;
-import com.cyser.base.utils.TimestampUtil;
+import com.cyser.base.enums.ClassTypeEnum;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 
-public class ClassDefinition {
+public class ClassDefinition implements CopyDefinition{
 
     public Class clazz;
 
-    public TypeEnum type;
+    public ClassTypeEnum type;
 
     public Type rawType;
 

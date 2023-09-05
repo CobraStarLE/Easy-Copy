@@ -2,12 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Easy-Copy.iml" filepath="$PROJECT_DIR$/.idea/modules/Easy-Copy.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Easy-Copy.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Easy-Copy.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.cyser.copy.Easy-Copy.iml" filepath="$PROJECT_DIR$/.idea/modules/com.cyser.copy.Easy-Copy.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cyser.Easy-Copy.iml" filepath="$PROJECT_DIR$/.idea/modules/cyser.Easy-Copy.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/study.Easy-Copy.iml" filepath="$PROJECT_DIR$/.idea/modules/study.Easy-Copy.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/study.Easy-Copy.main.iml" filepath="$PROJECT_DIR$/.idea/modules/study.Easy-Copy.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/easy-copy.iml" filepath="$PROJECT_DIR$/easy-copy.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/study.cyser.Easy-Copy.iml" filepath="$PROJECT_DIR$/.idea/modules/study.cyser.Easy-Copy.iml" />
     </modules>
   </component>

@@ -1,6 +1,6 @@
 package com.cyser.base.cache;
 
-import com.cyser.base.FieldDefinition;
+import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.utils.TimestampUtil;
 import com.google.common.collect.HashBasedTable;

@@ -41,7 +41,8 @@ public class GeneticTypeTest<T> {
             // 分组打印出来
             for (Type type : types) {
 
-                if (type instanceof ParameterizedType parameterizedType) {
+                if (type instanceof ParameterizedType) {
+                    ParameterizedType parameterizedType= (ParameterizedType) type;
                     System.out.println("**************");
                     System.out.println(
                             "ParameterizedType type [list typeVariableList wildcardList]: " + parameterizedType);
@@ -62,7 +63,8 @@ public class GeneticTypeTest<T> {
                             + (parameterizedType.getActualTypeArguments()[0] instanceof Class));
                     System.out.println("**************");
                 }
-                if (type instanceof GenericArrayType genericArrayType) {
+                if (type instanceof GenericArrayType) {
+                    GenericArrayType genericArrayType= (GenericArrayType) type;
                     System.out.println("---------------");
                     System.out.println("GenericArrayType type [pTypeArray vTypeArray]: " + genericArrayType);
                     Type genericComponentType = genericArrayType.getGenericComponentType();
@@ -71,13 +73,16 @@ public class GeneticTypeTest<T> {
                             + genericComponentType);
                     System.out.println("---------------");
                 }
-                if (type instanceof WildcardType wildcardType) {
+                if (type instanceof WildcardType ) {
+                    WildcardType wildcardType= (WildcardType) type;
                     System.out.println("WildcardType type [wildcardList]: " + wildcardType);
                 }
-                if (type instanceof TypeVariable typeVariable) {
+                if (type instanceof TypeVariable) {
+                    TypeVariable typeVariable= (TypeVariable) type;
                     System.out.println("TypeVariable type [typeVariable]:" + typeVariable);
                 }
-                if (type instanceof Class clazz) {
+                if (type instanceof Class) {
+                    Class clazz= (Class) type;
                     System.out.println(clazz.getName()+"是否是数组："+clazz.isArray());
                     System.out.println("type [strings test]: " + clazz);
                 }

@@ -1,4 +1,4 @@
-package com.cyser.base;
+package com.cyser.base.bean;
 
 import com.cyser.base.utils.TimestampUtil;
 
@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
-public class FieldDefinition {
+public class FieldDefinition implements CopyDefinition{
 
     public Field field;
 

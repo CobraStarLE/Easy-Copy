@@ -1,7 +1,7 @@
 package com.cyser.test.type;
 
-import com.cyser.base.ClassDefinition;
-import com.cyser.base.FieldDefinition;
+import com.cyser.base.bean.ClassDefinition;
+import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.utils.ClassUtil;
 import com.cyser.test.Boy;
 import com.cyser.test.Sex;
@@ -18,6 +18,10 @@ public class Test {
 //        Map<String, Field> catMap= ClassUtil.getAllFieldsMap(Cat.class);
 //        FieldDefinition catFd=ClassUtil.parseField(catMap.get("values"));
 //        System.out.println(catFd.type.getTypeName());
+
+
+        System.out.println(Dog.class.getName());
+        System.out.println(Dog.class.getSimpleName());
 
         System.out.println(Dog.class.hashCode());
 
@@ -38,17 +42,18 @@ public class Test {
 
         System.out.println(ClassUtil.isAssignable(list1.getClass(),list2.getClass(),true));
 
-        TypeReference<Cat<String>> tf=new TypeReference<>() {};//Paramter
-        TypeReference<Cat> tf2=new TypeReference<>() {};//class
-        TypeReference<Dog[]> tf3=new TypeReference<>() {};//class
-        TypeReference<Cat<String>[]> tf4=new TypeReference<>() {};//genericArrayType
-        TypeReference<Cat<?>> tf5=new TypeReference<>() {};//paramter
+        TypeReference<Cat<String>> tf=new TypeReference<Cat<String>>() {};//Paramter
+        TypeReference<Cat> tf2=new TypeReference<Cat>() {};//class
+        TypeReference<Dog[]> tf3=new TypeReference<Dog[]>() {};//class
+        TypeReference<Cat<String>[]> tf4=new TypeReference<Cat<String>[]>() {};//genericArrayType
+        TypeReference<Cat<?>> tf5=new TypeReference<Cat<?>>() {};//paramter
 
-        TypeReference<Dog> tf6=new TypeReference<>() {};//class
+        TypeReference<Dog> tf6=new TypeReference<Dog>() {};//class
 
-        ClassDefinition tf2_cf=ClassUtil.parseClass(tf2);
+//        ClassDefinition tf2_cf=ClassUtil.parseClass(tf2);
 
-        if(tf.getType() instanceof ParameterizedType pt){
+        if(tf.getType() instanceof ParameterizedType){
+            ParameterizedType pt = (ParameterizedType) tf.getType();
             System.out.println(pt.getActualTypeArguments()[0].getTypeName());
         }
 
@@ -59,7 +64,7 @@ public class Test {
 
         System.out.println(Dog.class);
 
-        Cat<Sex> cat=new Cat<>(){};
+        Cat<Sex> cat=new Cat<Sex>(){};
         System.out.println(((ParameterizedType)cat.getClass().getGenericSuperclass()).getActualTypeArguments()[0].getTypeName());;
 
         System.out.println(Boy.class.getGenericSuperclass().getTypeName());

@@ -1,12 +1,13 @@
-package com.cyser.base;
+package com.cyser.base.bean;
 
-import com.cyser.base.enums.TypeEnum;
+import com.cyser.base.enums.ClassTypeEnum;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 
-public class TypeDefinition {
+public class TypeDefinition implements CopyDefinition{
 
-    public TypeEnum type;
+    public ClassTypeEnum type;
 
     public Type rawType;
 
@@ -16,6 +17,8 @@ public class TypeDefinition {
      * 当为ParameterizedType
      */
     public TypeDefinition[] parameter_type_Defines;
+    public Map<String,Class> parameter_type_corresponds;//类上范型真实对应，比如我用定义的类Cat<T> ,然后真实使用是new Cat<Color>,这里存的就是T->Color.class
+
 
     /**
      * 是否是泛型类型

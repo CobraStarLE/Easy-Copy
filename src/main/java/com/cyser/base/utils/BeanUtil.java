@@ -1,11 +1,11 @@
 package com.cyser.base.utils;
 
-import com.cyser.base.FieldDefinition;
-import com.cyser.base.TypeDefinition;
+import com.cyser.base.bean.FieldDefinition;
+import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.cache.CopyableFieldsCache;
 import com.cyser.base.cache.TimeConvertCache;
 import com.cyser.base.enums.CopyFeature;
-import com.cyser.base.enums.TypeEnum;
+import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.param.CopyParam;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -18,7 +18,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -160,7 +159,7 @@ public class BeanUtil {
         }
     }
 
-    public static void copyArrayOnClass(Object target, Object src, TypeDefinition dest_type_def, TypeDefinition src_type_def, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) {
+    private static void copyArrayOnClass(Object target, Object src, TypeDefinition dest_type_def, TypeDefinition src_type_def, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) {
         if (ObjectUtils.isEmpty(src)) {
             return;
         }
@@ -217,9 +216,9 @@ public class BeanUtil {
         target = target_arr;
     }
 
-    public static void copyCollection(Object target, Object src, TypeDefinition dest_type_def, TypeDefinition src_type_def, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static Object copyCollection(Object target, Object src, TypeDefinition dest_type_def, TypeDefinition src_type_def, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (ObjectUtils.isEmpty(src)) {
-            return;
+            return target;
         }
         Collection src_collection = (Collection) src;
         Class _dest_clazz = dest_type_def.rawClass;
@@ -282,6 +281,7 @@ public class BeanUtil {
                 dest_collection.add(target_obj);
             }
         }
+        return target;
     }
 
     /**
@@ -445,7 +445,7 @@ public class BeanUtil {
 
     }
 
-    public static void copy(Object target, Object source, TypeReference dest_tr, TypeReference src_tr, CopyParam... cps) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public static Object copy(Object target, Object source, TypeReference dest_tr, TypeReference src_tr, CopyParam... cps) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (!ObjectUtils.allNotNull(dest_tr, src_tr)) {
             throw new RuntimeException("参数为空,停止复制值！");
         }
@@ -460,14 +460,14 @@ public class BeanUtil {
         Type src_type = src_tr.getType();
         TypeDefinition dest_type_def = ClassUtil.parseType(dest_type);
         TypeDefinition src_type_def = ClassUtil.parseType(src_type);
-        if (dest_type_def.type == TypeEnum.Class && dest_type_def.isGeneric) {
+        if (dest_type_def.type == ClassTypeEnum.Class && dest_type_def.isGeneric) {
             throw new RuntimeException("因为类[" + dest_type_def.rawClass.getName() + "]带有范型，请正确传参数dest_tr.");
         }
-        if (src_type_def.type == TypeEnum.Class && src_type_def.isGeneric) {
+        if (src_type_def.type == ClassTypeEnum.Class && src_type_def.isGeneric) {
             throw new RuntimeException("因为类[" + src_type_def.rawClass.getName() + "]带有范型，请正确传参数src_tr.");
         }
 
-        if (dest_type_def.type == TypeEnum.Class) {//普通类（没有范型）
+        if (dest_type_def.type == ClassTypeEnum.Class) {//普通类（没有范型）
             if (dest_type_def.isArray) {//如果是数组
                 if (src_type_def.isArray) {
                     copyArrayOnClass(target, source, dest_type_def, src_type_def, cp.exclude_fields, cp.copyFeature);
@@ -475,7 +475,7 @@ public class BeanUtil {
             } else {
                 copyEntityOnNoParadigm(target, source, dest_type_def.rawClass, src_type_def.rawClass, cp.exclude_fields, cp.copyFeature);
             }
-        } else if (dest_type_def.type == TypeEnum.ParameterizedType) {
+        } else if (dest_type_def.type == ClassTypeEnum.ParameterizedType) {
             if(ClassUtil.isCollection(dest_type_def.rawClass)){//如果是集合
                 copyCollection(target,source,dest_type_def,src_type_def,cp.exclude_fields,cp.copyFeature);
             }else if(ClassUtil.isMap(dest_type_def.rawClass)){//如果是Map
@@ -483,10 +483,11 @@ public class BeanUtil {
             }else{//如果是范型的普通类
 
             }
-        } else if (dest_type_def.type == TypeEnum.GenericArrayType) {
+        } else if (dest_type_def.type == ClassTypeEnum.GenericArrayType) {
         } else {
             throw new IllegalArgumentException("未识别的类型: " + ((dest_type == null) ? "[null]" : dest_type.toString()));
         }
+        return target;
     }
 
     private static void assginValue_DateTime(

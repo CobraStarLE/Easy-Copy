@@ -1,6 +1,6 @@
 package com.cyser.test;
 
-import com.cyser.base.FieldDefinition;
+import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.utils.ClassUtil;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;

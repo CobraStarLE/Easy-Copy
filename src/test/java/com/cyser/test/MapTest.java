@@ -1,6 +1,6 @@
 package com.cyser.test;
 
-import com.cyser.base.FieldDefinition;
+import com.cyser.base.bean.FieldDefinition;
 
 import java.util.HashMap;
 import java.util.List;

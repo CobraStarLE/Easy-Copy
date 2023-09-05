@@ -1,4 +1,4 @@
-package com.cyser.base;
+package com.cyser.base.bean;
 
 import com.cyser.base.enums.CopyFeature;
 import com.cyser.base.utils.BeanUtil;

@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
  * @author (your name)
  * @version (a version number or a date)
  */
+@FunctionalInterface
 public interface TernaryFunction<T, U, V, R> {
     R apply(T t, U u, V v);
 
