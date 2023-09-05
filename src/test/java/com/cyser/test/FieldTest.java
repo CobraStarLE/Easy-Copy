@@ -22,16 +22,6 @@ public class FieldTest {
         System.out.println();
 
         Class hair_clazz;
-        for (Field field : fields) {
-            FieldDefinition fd = ClassUtil.parseField(field);
-            System.out.println(ClassUtil.parseField(field));
-            System.out.println(field.getGenericType() instanceof Class<?>);
-            if (field.getName().equals("haires")) {
-                hair_clazz = fd.raw_Type_class;
-                System.out.println("是否可以分配:" + ClassUtils.isAssignable(List.class, hair_clazz, true));
-            }
-            System.out.println("-------------------");
-        }
         System.out.println();
     }
 }

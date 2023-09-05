@@ -6,39 +6,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
-public class FieldDefinition implements CopyDefinition{
+public class FieldDefinition extends CopyDefinition{
 
     public Field field;
 
-    public Type type;
-
     public Type genericType;
 
-    public Class raw_Type_class;
-
+    /**
+     * 当字段类型为范型时，字段范型的运行时类型
+     */
     public Class[] parameter_Type_classes;
 
     public TimestampUtil.FastDateFormatPattern timeFormat;
-
-    /**
-     * 是否是泛型类型
-     */
-    public boolean isGeneric = false;
-
-    /**
-     * 是否是基本类型
-     */
-    public boolean isPrimitive = false;
-
-    /**
-     * 是否是基本封装类型
-     */
-    public boolean isPrimitiveWrapper = false;
-
-    /**
-     * 是否是基本类型或者基本封装类型
-     */
-    public boolean isPrimitiveOrWrapper = false;
 
     /**
      * 是否是时间类型
@@ -56,7 +35,7 @@ public class FieldDefinition implements CopyDefinition{
                + "field="
                + field
                + ", type="
-               + type
+               + raw_type
                + ", genericType="
                + genericType
                + ", raw_Type_class="

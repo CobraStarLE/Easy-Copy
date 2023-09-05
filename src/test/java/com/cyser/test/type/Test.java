@@ -59,8 +59,6 @@ public class Test {
 
 
         Map<String, Field> cat2Map= ClassUtil.getAllFieldsMap(new Cat<String>(){}.getClass());
-        FieldDefinition cat2Fd=ClassUtil.parseField(cat2Map.get("color"));
-        System.out.println(cat2Fd.type.getTypeName());
 
         System.out.println(Dog.class);
 

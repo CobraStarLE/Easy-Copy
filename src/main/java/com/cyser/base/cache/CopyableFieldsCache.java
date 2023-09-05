@@ -1,6 +1,5 @@
 package com.cyser.base.cache;
 
-import com.cyser.base.bean.ClassDefinition;
 import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.enums.ClassTypeEnum;
@@ -20,18 +19,6 @@ import java.util.stream.Collectors;
 public class CopyableFieldsCache {
 
     public static Map<String, Map<String, FieldDefinition>> FIELDS_CACHE = Maps.newHashMap();
-
-    public static Map<String, FieldDefinition> getSerialFieldDefinitions(TypeDefinition clazz_def) throws ClassNotFoundException {
-        Class clazz=clazz_def.rawClass;
-        if(clazz_def.type== ClassTypeEnum.Class){
-            return getSerialFieldDefinitions(clazz);
-        }else if(clazz_def.type==ClassTypeEnum.ParameterizedType){
-//            return getSerialFieldDefinitions(clazz,clazz_def.parameterType.rawClass);
-            return null;
-        }else{
-            return null;
-        }
-    }
 
     /**
      * 返回某个Class中可序列化的字段Map
@@ -56,7 +43,8 @@ public class CopyableFieldsCache {
                         Collection<FieldDefinition> serial_fd_list; // 目标类可序列化字段
                         List<FieldDefinition> all_fd_list = new ArrayList<>(); // 目标类所有字段
                         for (Field field : all_dest_fields_list) {
-                            all_fd_list.add(ClassUtil.parseField(field));
+                            System.out.println(field.getGenericType().getTypeName());
+                            all_fd_list.add(ClassUtil.parseField(field,null));
                         }
                         serial_fd_list =
                                 all_fd_list.stream().filter(o -> o.isSerializable).collect(Collectors.toList());
@@ -79,17 +67,25 @@ public class CopyableFieldsCache {
     }
 
     /**
-     * 返回封装Class中可序列化的字段Map
-     *
-     * @param clazz                             封装类
-     * @param parameter_clazz                   封装类型,这里的类型只针对"T t"这样的字段，不支持 "Cat&lt;T&gt;"这样的字段
+     * 返回封装Class中可序列化的字段Map，
+     * <br/>
+     * 支持"T t","Cat&lt;T&gt;"这样的字段
      * @return Map<String, FieldDefinition>
      * @throws ClassNotFoundException
      */
-    public static Map<String, FieldDefinition> getSerialFieldDefinitions(Class clazz,Class parameter_clazz)
+    public static Map<String, FieldDefinition> getSerialFieldDefinitions(TypeDefinition type_def)
             throws ClassNotFoundException {
         //todo 解析封装类型的类
-        Map<String, FieldDefinition> serial_fd_map = FIELDS_CACHE.get(clazz.getName()+"_"+parameter_clazz.getName()); // 返回结果Map
+        Class clazz=type_def.runtime_class;
+        String cache_key=clazz.getName();//缓存Key
+        Map<String,Class> parameter_type_corresponds=type_def.parameter_type_corresponds;
+        if((type_def.class_type==ClassTypeEnum.Class&&type_def.isGeneric)||(type_def.class_type==ClassTypeEnum.ParameterizedType)){
+            cache_key=clazz.getName();
+            for(Map.Entry<String,Class> entry:parameter_type_corresponds.entrySet()){
+                cache_key+="#"+entry.getValue().getName();
+            }
+        }
+        Map<String, FieldDefinition> serial_fd_map = FIELDS_CACHE.get(cache_key); // 返回结果Map
         if (ObjectUtils.anyNull(serial_fd_map)) {
             synchronized (CopyableFieldsCache.class) {
                 serial_fd_map = FIELDS_CACHE.get(clazz.getName());
@@ -103,7 +99,7 @@ public class CopyableFieldsCache {
                         Collection<FieldDefinition> serial_fd_list; // 目标类可序列化字段
                         List<FieldDefinition> all_fd_list = new ArrayList<>(); // 目标类所有字段
                         for (Field field : all_dest_fields_list) {
-                            all_fd_list.add(ClassUtil.parseField(field));
+                            all_fd_list.add(ClassUtil.parseField(field,parameter_type_corresponds));
                         }
                         serial_fd_list =
                                 all_fd_list.stream().filter(o -> o.isSerializable).collect(Collectors.toList());

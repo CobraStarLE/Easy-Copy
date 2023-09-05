@@ -1,15 +1,13 @@
 package com.cyser.base.utils;
 
 import com.cyser.base.annotations.TimeFormat;
-import com.cyser.base.bean.ClassDefinition;
 import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.enums.ClassTypeEnum;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.cyser.base.enums.DataTypeEnum;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.reflect.TypeUtils;
 
 import java.beans.Transient;
 import java.lang.reflect.*;
@@ -231,89 +229,76 @@ public class ClassUtil {
 
     public static TypeDefinition parseType(Type type) throws ClassNotFoundException {
         TypeDefinition td = new TypeDefinition();
-        td.rawType = type;
-        td.type = ClassTypeEnum.valueOf(type);
-        td.rawClass = type.getClass();
-        td.isGeneric = true;
-        if (td.type == ClassTypeEnum.Unknown) {
+        td.raw_type = type;
+        td.class_type = ClassTypeEnum.valueOf(type);
+        td.raw_Type_class = type.getClass();
+        td.runtime_class=td.raw_Type_class;
+        if (td.class_type == ClassTypeEnum.Unknown) {
             throw new RuntimeException("未识别的类型: " + ((type == null) ? "[null]" : type.toString()));
         }
-        if (td.type == ClassTypeEnum.ParameterizedType) {
+        if (td.class_type == ClassTypeEnum.ParameterizedType) {
+            td.isGeneric = true;
             ParameterizedType parameter_type = (ParameterizedType) type;
-            td.rawClass = Class.forName(parameter_type.getRawType().getTypeName());
+            td.runtime_class = Class.forName(parameter_type.getRawType().getTypeName());
             Type[] actualTypeArguments = parameter_type.getActualTypeArguments();
             TypeDefinition[] parameter_type_Defines = new TypeDefinition[actualTypeArguments.length];
-            TypeVariable[] typeVariables= td.rawClass.getTypeParameters();
+            TypeVariable[] typeVariables= td.runtime_class.getTypeParameters();
             Map<String,Class> parameter_type_corresponds=new HashMap<>();
             for (int i = 0; i < actualTypeArguments.length; i++) {
                 parameter_type_Defines[i] = parseType(actualTypeArguments[i]);
-                parameter_type_corresponds.put(typeVariables[i].getName(),parameter_type_Defines[i].rawClass);
+                parameter_type_corresponds.put(typeVariables[i].getName(),parameter_type_Defines[i].runtime_class);
             }
             td.parameter_type_corresponds=parameter_type_corresponds;
             td.parameter_type_Defines = parameter_type_Defines;
-        } else if (td.type == ClassTypeEnum.Class) {
-            td.isGeneric = false;
+        } else if (td.class_type == ClassTypeEnum.Class) {
             Class clazz = (Class) type;
+            td.isGeneric = isGenericClass(clazz);
+
             //判断是否是数组
             if (clazz.getComponentType() != null) {
                 td.isArray = true;
-                ClassDefinition componetClassDefine = parseClass(clazz.getComponentType());
+                TypeDefinition componetClassDefine = parseType(clazz.getComponentType());
                 td.componetClassDefine = componetClassDefine;
             } else {
-                td.rawClass = Class.forName(td.rawType.getTypeName());
-                td.isSerializable = isSerializableClass(td.rawClass);
+                td.runtime_class = Class.forName(td.raw_type.getTypeName());
+                td.isSerializable = isSerializableClass(td.runtime_class);
                 // 判断是否是基本类型
-                td.isPrimitive = td.rawClass.isPrimitive();
+                td.isPrimitive = td.runtime_class.isPrimitive();
                 // 判断是否是基本封装类型
-                td.isPrimitiveWrapper = ClassUtils.isPrimitiveWrapper(td.rawClass);
+                td.isPrimitiveWrapper = ClassUtils.isPrimitiveWrapper(td.runtime_class);
                 // 判断是否是基本类型或者基本封装类型
                 td.isPrimitiveOrWrapper = td.isPrimitive || td.isPrimitiveWrapper;
+                Map<String,Class> parameter_type_corresponds=new HashMap<>();
+                if(td.isGeneric){
+                    TypeVariable<? extends Class<?>>[] typeVariables = clazz.getTypeParameters();
+                    for (int i = 0; i < typeVariables.length; i++) {
+                        parameter_type_corresponds.put(typeVariables[i].getName(),Object.class);
+                    }
+                }
+                td.parameter_type_corresponds=parameter_type_corresponds;
+
             }
-        } else if (td.type == ClassTypeEnum.GenericArrayType) {
+        } else if (td.class_type == ClassTypeEnum.GenericArrayType) {
+            td.isGeneric = true;
             td.isArray = true;
             GenericArrayType genricArrayType = (GenericArrayType) type;
             Type genericComponentType = genricArrayType.getGenericComponentType();
             td.genericComponentType = parseType(genericComponentType);
-        } else if (td.type == ClassTypeEnum.WildcardType) {
+        } else if (td.class_type == ClassTypeEnum.WildcardType) {
+            td.isGeneric = true;
             WildcardType wildcardType = (WildcardType) type;
             Type[] upperBounds = wildcardType.getUpperBounds();
             if (ObjectUtils.isNotEmpty(upperBounds)) {
-                td.upperBounds = parseClass((Class) upperBounds[0]);
+                td.upperBounds = parseType((Class) upperBounds[0]);
             }
             Type[] lowerBounds = wildcardType.getLowerBounds();
             if (ObjectUtils.isNotEmpty(lowerBounds)) {
-                td.lowerBounds = parseClass((Class) lowerBounds[0]);
+                td.lowerBounds = parseType((Class) lowerBounds[0]);
             }
-        } else if (td.type == ClassTypeEnum.TypeVariable) {
-
+        } else if (td.class_type == ClassTypeEnum.TypeVariable) {
+            td.isGeneric = false;
         }
         return td;
-    }
-
-    public static ClassDefinition parseClass(Class clazz) {
-        ClassDefinition cf = new ClassDefinition();
-        if (isGenericClass(clazz)) {
-            throw new RuntimeException("不支持解析带有范型类型的类[" + clazz.getName() + "]！");
-        }
-        cf.isGeneric = false;
-        cf.clazz = clazz;
-        cf.rawType = clazz;
-        cf.type = ClassTypeEnum.Class;
-        //判断是否是数组
-        if (clazz.isArray()) {
-            cf.isArray = true;
-            ClassDefinition componetClassDefine = parseClass(clazz.getComponentType());
-            cf.componentClassDefine = componetClassDefine;
-        }
-        cf.isSerializable = isSerializableClass(clazz);
-        // 判断是否是基本类型
-        cf.isPrimitive = clazz.isPrimitive();
-        // 判断是否是基本封装类型
-        cf.isPrimitiveWrapper = ClassUtils.isPrimitiveWrapper(clazz);
-        // 判断是否是基本类型或者基本封装类型
-        cf.isPrimitiveOrWrapper = cf.isPrimitive || cf.isPrimitiveWrapper;
-
-        return cf;
     }
 
     /**
@@ -322,29 +307,37 @@ public class ClassUtil {
      * @param field
      * @return
      */
-    public static FieldDefinition parseField(Field field) throws ClassNotFoundException {
+    public static FieldDefinition parseField(Field field,Map<String,Class> parameter_type_corresponds) throws ClassNotFoundException {
         Type type = field.getType();
         Type generic_type = field.getGenericType();
         FieldDefinition fd = new FieldDefinition();
         if (!field.isAccessible()) field.setAccessible(true);
         fd.field = field;
-        fd.type = type;
+        fd.raw_type = type;
         fd.genericType = generic_type;
         fd.raw_Type_class = ClassUtils.getClass(type.getTypeName());
+        fd.runtime_class=fd.raw_Type_class;
         // 如果是泛型
         if (generic_type instanceof ParameterizedType) {
             fd.isGeneric = true;
             Type[] param_types = ((ParameterizedType) generic_type).getActualTypeArguments();
             Class[] parameter_Type_classes = new Class[param_types.length];
             for (int i = 0; i < param_types.length; i++) {
-                if (param_types[i] instanceof TypeVariable) {
-                    System.out.println(TypeUtils.getRawType(param_types[i], generic_type));
-                    System.out.println();
+                ClassTypeEnum classType=ClassTypeEnum.valueOf(param_types[i]);
+                if (classType==ClassTypeEnum.TypeVariable) {//如果是List<V>这种
+                    parameter_Type_classes[i] = parameter_type_corresponds.get(param_types[i].getTypeName());
+                }else if(classType==ClassTypeEnum.Class){//如果是List<Cat>这种
+                    parameter_Type_classes[i] = ClassUtils.getClass(param_types[i].getTypeName());
                 }
-                parameter_Type_classes[i] = ClassUtils.getClass(param_types[i].getTypeName());
             }
             fd.parameter_Type_classes = parameter_Type_classes;
+        }else if(fd.raw_type instanceof TypeVariable){//如果是V v这种
+            TypeVariable _type= (TypeVariable) fd.raw_type;
+            fd.runtime_class=parameter_type_corresponds.get(_type.getTypeName());
+        }else if(fd.raw_type instanceof WildcardType){//如果是List<?>这种
+
         }
+        fd.data_type= DataTypeEnum.valueOf(fd.runtime_class);
         // 判断是否是基本类型
         fd.isPrimitive = fd.raw_Type_class.isPrimitive();
         // 判断是否是基本封装类型

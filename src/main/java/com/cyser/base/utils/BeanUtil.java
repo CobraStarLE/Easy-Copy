@@ -1,11 +1,13 @@
 package com.cyser.base.utils;
 
+import com.cyser.base.bean.CopyDefinition;
 import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
-import com.cyser.base.cache.CopyableFieldsCache;
+import com.cyser.base.cache.BeanConvertCache;
 import com.cyser.base.cache.TimeConvertCache;
-import com.cyser.base.enums.CopyFeature;
 import com.cyser.base.enums.ClassTypeEnum;
+import com.cyser.base.enums.CopyFeature;
+import com.cyser.base.function.PentaFunction;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.param.CopyParam;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -13,14 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class BeanUtil {
@@ -28,10 +27,7 @@ public class BeanUtil {
     private BeanUtil() {
     }
 
-    public static void copy(Object target, Object[] source, CopyFeature.CopyFeatureHolder... cfh) {
-        copy(target, source, null, cfh);
-    }
-
+/*
     public static void copy(Object target, Object[] source, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) {
         if (target == null)
             throw new IllegalArgumentException("对象为null,停止复制!");
@@ -158,6 +154,7 @@ public class BeanUtil {
             throw new RuntimeException(e.getMessage());
         }
     }
+*/
 
     private static void copyArrayOnClass(Object target, Object src, TypeDefinition dest_type_def, TypeDefinition src_type_def, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) {
         if (ObjectUtils.isEmpty(src)) {
@@ -166,8 +163,8 @@ public class BeanUtil {
         Object[] src_arr = (Object[]) src;
         Object[] target_arr = new Object[src_arr.length];
 
-        Class _dest_clazz = dest_type_def.componetClassDefine.clazz;
-        Class _src_clazz = src_type_def.componetClassDefine.clazz;
+        Class _dest_clazz = dest_type_def.componetClassDefine.runtime_class;
+        Class _src_clazz = src_type_def.componetClassDefine.runtime_class;
         if (dest_type_def.componetClassDefine.isPrimitive) {
             _dest_clazz = ClassUtils.primitiveToWrapper(_dest_clazz);
         }
@@ -209,7 +206,7 @@ public class BeanUtil {
             } else if (t3) {
                 target_arr[i] = String.valueOf(_f_src_val == null ? "" : _f_src_val);
             } else {
-                copyEntityOnNoParadigm(_f_dest_val, _f_src_val, _dest_clazz, _src_clazz, exclude_fields, cfh);
+//                copyEntityOnNoParadigm(_f_dest_val, _f_src_val, _dest_clazz, _src_clazz, exclude_fields, cfh);
                 target_arr[i] = _f_dest_val;
             }
         }
@@ -221,12 +218,12 @@ public class BeanUtil {
             return target;
         }
         Collection src_collection = (Collection) src;
-        Class _dest_clazz = dest_type_def.rawClass;
-        Class _src_clazz = src_type_def.rawClass;
+        Class _dest_clazz = dest_type_def.runtime_class;
+        Class _src_clazz = src_type_def.runtime_class;
         Class _dest_Element_clazz = null,_src_Element_clazz = null;
         if(dest_type_def.isGeneric){
-             _dest_Element_clazz=dest_type_def.parameter_type_Defines[0].rawClass;
-            _src_Element_clazz=src_type_def.parameter_type_Defines[0].rawClass;
+             _dest_Element_clazz=dest_type_def.parameter_type_Defines[0].runtime_class;
+            _src_Element_clazz=src_type_def.parameter_type_Defines[0].runtime_class;
             if (dest_type_def.parameter_type_Defines[0].isPrimitive) {
                 _dest_Element_clazz = ClassUtils.primitiveToWrapper(_dest_Element_clazz);
             }
@@ -277,7 +274,7 @@ public class BeanUtil {
                 Constructor<?> constructor = _dest_Element_clazz.getDeclaredConstructor();
                 // 创建对象实例
                 Object target_obj= constructor.newInstance();
-                copyEntityOnNoParadigm(target_obj, _f_src_val, _dest_Element_clazz, _src_Element_clazz, exclude_fields, cfh);
+//                copyEntityOnNoParadigm(target_obj, _f_src_val, _dest_Element_clazz, _src_Element_clazz, exclude_fields, cfh);
                 dest_collection.add(target_obj);
             }
         }
@@ -288,9 +285,8 @@ public class BeanUtil {
      * 复制没有范型的实体类
      *
      * @param target
-     * @param exclude_fields
-     * @param cfh
      */
+/*
     public static void copyEntityOnNoParadigm(Object target, Object src, Class clazz, Class src_clazz, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) {
         if (target == null)
             throw new IllegalArgumentException("对象为null,停止复制!");
@@ -418,6 +414,7 @@ public class BeanUtil {
             throw new RuntimeException(e.getMessage());
         }
     }
+*/
 
     public static void copy(Object target, Object[] source, CopyParam cp) {
     }
@@ -460,33 +457,16 @@ public class BeanUtil {
         Type src_type = src_tr.getType();
         TypeDefinition dest_type_def = ClassUtil.parseType(dest_type);
         TypeDefinition src_type_def = ClassUtil.parseType(src_type);
-        if (dest_type_def.type == ClassTypeEnum.Class && dest_type_def.isGeneric) {
-            throw new RuntimeException("因为类[" + dest_type_def.rawClass.getName() + "]带有范型，请正确传参数dest_tr.");
+        if (dest_type_def.class_type == ClassTypeEnum.Class && dest_type_def.isGeneric) {
+            throw new RuntimeException("因为类[" + dest_type_def.runtime_class.getName() + "]带有范型，请正确传参数dest_tr.");
         }
-        if (src_type_def.type == ClassTypeEnum.Class && src_type_def.isGeneric) {
-            throw new RuntimeException("因为类[" + src_type_def.rawClass.getName() + "]带有范型，请正确传参数src_tr.");
+        if (src_type_def.class_type == ClassTypeEnum.Class && src_type_def.isGeneric) {
+            throw new RuntimeException("因为类[" + src_type_def.runtime_class.getName() + "]带有范型，请正确传参数src_tr.");
         }
 
-        if (dest_type_def.type == ClassTypeEnum.Class) {//普通类（没有范型）
-            if (dest_type_def.isArray) {//如果是数组
-                if (src_type_def.isArray) {
-                    copyArrayOnClass(target, source, dest_type_def, src_type_def, cp.exclude_fields, cp.copyFeature);
-                }
-            } else {
-                copyEntityOnNoParadigm(target, source, dest_type_def.rawClass, src_type_def.rawClass, cp.exclude_fields, cp.copyFeature);
-            }
-        } else if (dest_type_def.type == ClassTypeEnum.ParameterizedType) {
-            if(ClassUtil.isCollection(dest_type_def.rawClass)){//如果是集合
-                copyCollection(target,source,dest_type_def,src_type_def,cp.exclude_fields,cp.copyFeature);
-            }else if(ClassUtil.isMap(dest_type_def.rawClass)){//如果是Map
+        PentaFunction<Object, Object, TypeDefinition, TypeDefinition, CopyParam, Object> copy_opera= BeanConvertCache.bean_method_table.get(dest_type_def.data_type,src_type_def.data_type);
+        target=copy_opera.apply(target,source,dest_type_def,src_type_def,cp);
 
-            }else{//如果是范型的普通类
-
-            }
-        } else if (dest_type_def.type == ClassTypeEnum.GenericArrayType) {
-        } else {
-            throw new IllegalArgumentException("未识别的类型: " + ((dest_type == null) ? "[null]" : dest_type.toString()));
-        }
         return target;
     }
 

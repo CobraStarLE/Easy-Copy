@@ -1,7 +1,6 @@
 package com.cyser.base.bean;
 
 import com.cyser.base.enums.CopyFeature;
-import com.cyser.base.utils.BeanUtil;
 
 import java.util.Collection;
 import java.util.function.Consumer;
@@ -13,7 +12,7 @@ public interface Copyable<T> {
     }
 
     default T copy(Object[] source, Collection<String> exclude_fields, CopyFeature.CopyFeatureHolder... cfh) {
-        BeanUtil.copy(this, source, exclude_fields, cfh);
+//        BeanUtil.copy(this, source, exclude_fields, cfh);
         return (T) this;
     }
 

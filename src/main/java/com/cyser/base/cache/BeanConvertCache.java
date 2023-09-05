@@ -1,8 +1,7 @@
 package com.cyser.base.cache;
 
-import com.cyser.base.bean.ClassDefinition;
-import com.cyser.base.bean.CopyDefinition;
 import com.cyser.base.bean.FieldDefinition;
+import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.enums.CopyFeature;
 import com.cyser.base.enums.DataTypeEnum;
 import com.cyser.base.function.PentaFunction;
@@ -33,7 +32,7 @@ public class BeanConvertCache {
      * @param Object              返回对象值
      */
     public static final Table<
-            DataTypeEnum, DataTypeEnum, PentaFunction<Object, Object, CopyDefinition, CopyDefinition, CopyParam, Object>>
+            DataTypeEnum, DataTypeEnum, PentaFunction<Object, Object, TypeDefinition, TypeDefinition, CopyParam, Object>>
             bean_method_table = HashBasedTable.create();
 
     static {
@@ -41,23 +40,21 @@ public class BeanConvertCache {
     }
 
 
-    public static Object copyEntity2Entity(Object target, Object src, CopyDefinition _target_def, CopyDefinition _src_def, CopyParam cp) {
+    public static Object copyEntity2Entity(Object target, Object src, TypeDefinition target_def, TypeDefinition src_def, CopyParam cp) {
         if (target == null)
             throw new IllegalArgumentException("对象为null,停止复制!");
         Collection<String> exclude_fields=cp.exclude_fields;
         CopyFeature.CopyFeatureHolder cfh=cp.copyFeature;
         try {
-            ClassDefinition target_def= (ClassDefinition) _target_def;
-            ClassDefinition src_def= (ClassDefinition) _src_def;
-            Class target_clazz=target_def.clazz;
+            Class target_clazz=target_def.runtime_class;
             if (target_clazz == null) {
                 target_clazz = target.getClass(); // 目标对象类
             }
-            Class src_clazz=src_def.clazz;
+            Class src_clazz=src_def.runtime_class;
             if (ObjectUtils.isNotEmpty(src)) {
                 // 获取目标类字段
                 Map<String, FieldDefinition> serial_dest_fd_map =
-                        CopyableFieldsCache.getSerialFieldDefinitions(target_clazz);
+                        CopyableFieldsCache.getSerialFieldDefinitions(target_def);
                 if (serial_dest_fd_map.size() == 0) {
                     throw new IllegalArgumentException("目标类[" + target_clazz.getName() + "]未包含任何可序列化字段.");
                 }
@@ -175,8 +172,8 @@ public class BeanConvertCache {
     private static void assginValue_DateTime(
             FieldDefinition src_fd, FieldDefinition dest_fd, Object target, Object src_val)
             throws IllegalAccessException {
-        Class<?> _src_clazz = src_fd.raw_Type_class;
-        Class<?> _dest_clazz = dest_fd.raw_Type_class;
+        Class<?> _src_clazz = src_fd.runtime_class;
+        Class<?> _dest_clazz = dest_fd.runtime_class;
         if (src_fd.isPrimitive) {
             _src_clazz = ClassUtils.primitiveToWrapper(_src_clazz);
         }
