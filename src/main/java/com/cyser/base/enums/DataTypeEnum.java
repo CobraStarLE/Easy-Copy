@@ -10,15 +10,16 @@ public enum DataTypeEnum {
     Collection,//集合
     Map,//Hash表
     Array,//数组
-    PrimitiveOrWrapper,//基本类型或者封装类型
+    PrimitiveOrWrapperOrString,//基本类型或者封装类型或者字符串
+    Enum,//枚举
     Unknown;//未知
 
     public static DataTypeEnum valueOf(Class clazz){
         if(clazz==Object.class){
             return Object_Class;
         }
-        if(ClassUtils.isPrimitiveOrWrapper(clazz)){
-            return PrimitiveOrWrapper;
+        if(ClassUtils.isPrimitiveOrWrapper(clazz)||clazz==String.class){
+            return PrimitiveOrWrapperOrString;
         }
         if(clazz.isArray()){
             return Array;

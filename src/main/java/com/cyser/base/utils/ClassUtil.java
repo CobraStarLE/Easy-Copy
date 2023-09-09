@@ -1,6 +1,8 @@
 package com.cyser.base.utils;
 
+import com.cyser.base.annotations.EnumFormat;
 import com.cyser.base.annotations.TimeFormat;
+import com.cyser.base.bean.EnumInfo;
 import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.classloader.ByteBuddyClassLoader;
@@ -14,9 +16,11 @@ import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.AnnotationUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 
 import java.beans.Transient;
 import java.lang.reflect.*;
@@ -109,7 +113,6 @@ public class ClassUtil {
 
         return !t1 && !t2;
     }
-
 
     /**
      * 获取一个类所有的声明字段(包含超类)
@@ -307,7 +310,7 @@ public class ClassUtil {
         } else if (td.class_type == ClassTypeEnum.TypeVariable) {
             td.isGeneric = false;
         }
-        td.data_type=DataTypeEnum.valueOf(td.runtime_class);
+        td.setData_type(DataTypeEnum.valueOf(td.runtime_class));
         return td;
     }
 
@@ -384,11 +387,14 @@ public class ClassUtil {
         }else if(fd.raw_type instanceof WildcardType){//如果是List<?>这种
 
         }
-        fd.data_type= DataTypeEnum.valueOf(fd.runtime_class);
+        fd.setData_type(DataTypeEnum.valueOf(fd.runtime_class));
         // 判断是否是基本类型
         fd.isPrimitive = fd.raw_Type_class.isPrimitive();
         // 判断是否是基本封装类型
         fd.isPrimitiveWrapper = ClassUtils.isPrimitiveWrapper(fd.raw_Type_class);
+        if(fd.isPrimitive){
+            fd.runtime_class=ClassUtils.primitiveToWrapper(fd.runtime_class);
+        }
         // 判断是否是基本类型或者基本封装类型
         fd.isPrimitiveOrWrapper = fd.isPrimitive || fd.isPrimitiveWrapper;
         // 判断是否是日期字段
@@ -403,6 +409,34 @@ public class ClassUtil {
         }
         // 判断是否是可序列化字段
         if (!isSerializableField(field)) fd.isSerializable = false;
+        // 解析枚举
+        EnumFormat[] enumFormats=field.getAnnotationsByType(EnumFormat.class);
+        Map<Class,EnumInfo> enumInfos=new HashMap();
+        if(ObjectUtils.isNotEmpty(enumFormats)){
+            EnumInfo info;
+            for (int i = 0; i < enumFormats.length; i++) {
+                EnumFormat enumFormat=enumFormats[i];
+                info=new EnumInfo();
+                info.id=enumFormat.id()==Object.class?fd.field.getDeclaringClass():enumFormat.id();
+                if(Enum.class.isAssignableFrom(fd.runtime_class)){
+                    info.enum_clazz=fd.runtime_class;
+                }else {
+                    info.enum_clazz=enumFormat.enum_class()==Object.class?null:enumFormat.enum_class();
+                }
+                info.define_clazz=fd.runtime_class;
+                info.from_field= enumFormat.from_field();
+                info.self_field= enumFormat.self_field();
+                info.to_field= enumFormat.to_field();
+                enumInfos.put(info.id,info);
+            }
+        }else if(Enum.class.isAssignableFrom(fd.runtime_class)){
+            EnumInfo info=new EnumInfo();
+            info.id=null;
+            info.define_clazz=fd.runtime_class;
+            info.enum_clazz=fd.runtime_class;
+            enumInfos.put(fd.field.getDeclaringClass(),info);
+        }
+        fd.enumInfos=enumInfos;
         return fd;
     }
 

@@ -1,5 +1,7 @@
 package com.cyser.base.bean;
 
+import com.cyser.base.enums.DataTypeEnum;
+
 import java.util.Map;
 
 public class TypeDefinition extends CopyDefinition{
@@ -29,5 +31,9 @@ public class TypeDefinition extends CopyDefinition{
      * 当为GenericArrayType时
      */
     public TypeDefinition genericComponentType;
+
+    public DataTypeEnum getData_type(){
+        return data_type;
+    }
 
 }
