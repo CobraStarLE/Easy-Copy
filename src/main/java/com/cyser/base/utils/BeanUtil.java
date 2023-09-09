@@ -233,9 +233,7 @@ public class BeanUtil {
         }
 
         if (ObjectUtils.allNull(target)) {
-            Constructor<?> constructor = _dest_clazz.getDeclaredConstructor();
-            // 创建对象实例
-            target = constructor.newInstance();
+            target=ClassUtil.newInstance(_dest_clazz);
         }
         Collection dest_collection = (Collection) target;
         // 源字段是字符串，并且目标字段是基本或者封装类型，并且目标字段不是空类型或者布尔类型

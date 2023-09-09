@@ -8,7 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class CopyTest {
 
-    private static void test1() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private void test1() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         Cat cat1=new Cat();
         Boy cat2=new Boy();
 
@@ -17,6 +17,7 @@ public class CopyTest {
         System.out.println();
     }
     public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        test1();
+        CopyTest copyTest=new CopyTest();
+        copyTest.test1();
     }
 }

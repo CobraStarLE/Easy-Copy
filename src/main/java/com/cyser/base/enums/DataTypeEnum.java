@@ -4,6 +4,8 @@ import com.cyser.base.utils.ClassUtil;
 import org.apache.commons.lang3.ClassUtils;
 
 public enum DataTypeEnum {
+
+    Object_Class,//Object类
     Entity_Class,//实体类
     Collection,//集合
     Map,//Hash表
@@ -12,6 +14,9 @@ public enum DataTypeEnum {
     Unknown;//未知
 
     public static DataTypeEnum valueOf(Class clazz){
+        if(clazz==Object.class){
+            return Object_Class;
+        }
         if(ClassUtils.isPrimitiveOrWrapper(clazz)){
             return PrimitiveOrWrapper;
         }

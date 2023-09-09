@@ -3,11 +3,20 @@ package com.cyser.base.utils;
 import com.cyser.base.annotations.TimeFormat;
 import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
+import com.cyser.base.classloader.ByteBuddyClassLoader;
 import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.enums.DataTypeEnum;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.beans.Transient;
 import java.lang.reflect.*;
@@ -269,7 +278,7 @@ public class ClassUtil {
                 // 判断是否是基本类型或者基本封装类型
                 td.isPrimitiveOrWrapper = td.isPrimitive || td.isPrimitiveWrapper;
                 Map<String,Class> parameter_type_corresponds=new HashMap<>();
-                if(td.isGeneric){
+                if(td.isGeneric){//如果是范型
                     TypeVariable<? extends Class<?>>[] typeVariables = clazz.getTypeParameters();
                     for (int i = 0; i < typeVariables.length; i++) {
                         parameter_type_corresponds.put(typeVariables[i].getName(),Object.class);
@@ -300,6 +309,43 @@ public class ClassUtil {
         }
         td.data_type=DataTypeEnum.valueOf(td.runtime_class);
         return td;
+    }
+
+    /**
+     * 假如一个类中字段定义为List&lt;T&gt; list,T在运行中类型为String.class,我们对该字段生成
+     * <br/>
+     * 一个临时的新字段List&lt;String&gt; list
+     * @param field_def
+     * @return
+     */
+    public static Type generateRuntimeField(FieldDefinition field_def) {
+        Field field=field_def.field;
+        Class declaredClazz=field.getDeclaringClass();
+        if(field_def.isGeneric){
+            String raw_class_name=declaredClazz.getName();
+            ByteBuddyClassLoader classLoader=new ByteBuddyClassLoader();
+            int index=raw_class_name.lastIndexOf("$");
+            String tmpClassName=raw_class_name+Thread.currentThread().getId();
+            if(index>0){
+                tmpClassName=raw_class_name.substring(+1)+Thread.currentThread().getId();
+            }
+            TypeDescription.Generic generic = TypeDescription.Generic.Builder
+                    .parameterizedType(field_def.runtime_class, field_def.parameter_Type_classes).build();
+            Class loaded = new ByteBuddy().subclass(Object.class).name(classLoader.getBasePackage()+"."+tmpClassName)
+                    .defineField(field.getName(), generic, Visibility.PRIVATE).make()
+                    .load(classLoader, ClassLoadingStrategy.Default.INJECTION).getLoaded();
+            Field temp_field = null;
+            try {
+                temp_field = loaded.getDeclaredField(field.getName());
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+            Type fieldType = temp_field.getGenericType();
+            loaded=null;
+            return fieldType;
+        }
+        return field_def.raw_type;
+
     }
 
     /**
@@ -358,5 +404,43 @@ public class ClassUtil {
         // 判断是否是可序列化字段
         if (!isSerializableField(field)) fd.isSerializable = false;
         return fd;
+    }
+
+    /**
+     * 根据Class生成对象实例
+     * <br>
+     * 注意:不支持静态类，生成对象实例成功的前提是该Class有默认的构造方法
+     * @param clazz
+     * @return
+     * @throws InvocationTargetException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws NoSuchMethodException
+     */
+    public static Object newInstance(Class clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+        boolean isInnerClass=clazz.isMemberClass();
+        if(isInnerClass){//如果是内部类
+            Class outerClass=clazz.getEnclosingClass();
+            Object outObj=newInstance(outerClass);
+            Constructor<?> constructor=clazz.getDeclaredConstructor(outerClass);
+            constructor.setAccessible(true);
+            return constructor.newInstance(outObj);
+        }else if(isCollection(clazz)){
+            if(List.class.isAssignableFrom(clazz)){
+                return Lists.newArrayList();
+            }
+            if(Set.class.isAssignableFrom(clazz)){
+                return Sets.newHashSet();
+            }
+            if(Queue.class.isAssignableFrom(clazz)){
+                return Queues.newArrayDeque();
+            }
+        }else{
+            Constructor<?> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            // 创建对象实例
+            return constructor.newInstance();
+        }
+        throw new RuntimeException("该类型"+clazz.getName()+"不支持生成实例！");
     }
 }

@@ -4,6 +4,10 @@ import com.cyser.base.utils.ClassUtil;
 import com.cyser.test.Boy;
 import com.cyser.test.Sex;
 import com.fasterxml.jackson.core.type.TypeReference;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -12,6 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 public class Test {
+
+    public void test(){
+        TypeDescription.Generic generic = TypeDescription.Generic.Builder
+                .parameterizedType(List.class, Object.class).build();
+
+
+    }
     public static void main(String[] args) throws ClassNotFoundException {
 //        Map<String, Field> catMap= ClassUtil.getAllFieldsMap(Cat.class);
 //        FieldDefinition catFd=ClassUtil.parseField(catMap.get("values"));

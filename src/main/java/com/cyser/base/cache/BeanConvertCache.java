@@ -7,6 +7,7 @@ import com.cyser.base.enums.DataTypeEnum;
 import com.cyser.base.function.PentaFunction;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.param.CopyParam;
+import com.cyser.base.utils.ClassUtil;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,8 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,21 +39,42 @@ public class BeanConvertCache {
             bean_method_table = HashBasedTable.create();
 
     static {
-        bean_method_table.put(DataTypeEnum.Entity_Class, DataTypeEnum.Entity_Class, (target,src,target_def,src_def,cp) -> copyEntity2Entity(target,src,target_def,src_def,cp));
+        bean_method_table.put(DataTypeEnum.Object_Class, DataTypeEnum.Object_Class, (target, src, target_def, src_def, cp) -> copyObject2Object(target, src, target_def, src_def, cp));
+        bean_method_table.put(DataTypeEnum.Entity_Class, DataTypeEnum.Entity_Class, (target, src, target_def, src_def, cp) -> copyEntity2Entity(target, src, target_def, src_def, cp));
+        bean_method_table.put(DataTypeEnum.Object_Class, DataTypeEnum.Entity_Class, (target, src, target_def, src_def, cp) -> copyObject2Object(target, src, target_def, src_def, cp));
+        bean_method_table.put(DataTypeEnum.Collection, DataTypeEnum.Collection, (target, src, target_def, src_def, cp) -> copyCollection2Collection(target, src, target_def, src_def, cp));
+    }
+
+    public static Object copyObject2Object(Object target, Object src, TypeDefinition target_def, TypeDefinition src_def, CopyParam cp) {
+        if (target == null){
+            try {
+                target = ClassUtil.newInstance(target_def.runtime_class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }}
+        CopyFeature.CopyFeatureHolder cfh = cp.copyFeature;
+        if(ObjectUtils.allNotNull(src)||(ObjectUtils.allNull(src)&&cfh.isEnabled(CopyFeature.COPY_NULL_VALUE))){
+            target=src;
+        }
+        return target;
     }
 
 
     public static Object copyEntity2Entity(Object target, Object src, TypeDefinition target_def, TypeDefinition src_def, CopyParam cp) {
-        if (target == null)
-            throw new IllegalArgumentException("对象为null,停止复制!");
-        Collection<String> exclude_fields=cp.exclude_fields;
-        CopyFeature.CopyFeatureHolder cfh=cp.copyFeature;
+        if (target == null){
+            try {
+                target = ClassUtil.newInstance(target_def.runtime_class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }}
+        Collection<String> exclude_fields = cp.exclude_fields;
+        CopyFeature.CopyFeatureHolder cfh = cp.copyFeature;
         try {
-            Class target_clazz=target_def.runtime_class;
+            Class target_clazz = target_def.runtime_class;
             if (target_clazz == null) {
                 target_clazz = target.getClass(); // 目标对象类
             }
-            Class src_clazz=src_def.runtime_class;
+            Class src_clazz = src_def.runtime_class;
             if (ObjectUtils.isNotEmpty(src)) {
                 // 获取目标类字段
                 Map<String, FieldDefinition> serial_dest_fd_map =
@@ -109,11 +133,11 @@ public class BeanConvertCache {
                             }
                             // 如果两者类型相同，直接赋值
                             if (ClassUtils.isAssignable(
-                                    tmp_src_fd.raw_Type_class, tmp_dest_fd.raw_Type_class, true)) {
+                                    tmp_src_fd.runtime_class, tmp_dest_fd.runtime_class, true)) {
                                 tmp_dest_fd.field.set(target, _f_src_val);
                             } else {
-                                Class<?> _src_clazz = tmp_src_fd.raw_Type_class;
-                                Class<?> _dest_clazz = tmp_dest_fd.raw_Type_class;
+                                Class<?> _src_clazz = tmp_src_fd.runtime_class;
+                                Class<?> _dest_clazz = tmp_dest_fd.runtime_class;
                                 if (tmp_src_fd.isPrimitive) {
                                     _src_clazz = ClassUtils.primitiveToWrapper(_src_clazz);
                                 }
@@ -132,8 +156,25 @@ public class BeanConvertCache {
                                         _dest_clazz.isAssignableFrom(String.class)
                                                 && ClassUtils.isPrimitiveOrWrapper(_src_clazz)
                                                 && (!(Void.TYPE.equals(_src_clazz) || Boolean.TYPE.equals(_src_clazz)));
-                                if (!(t1 || t2 || t3))
-                                    throw new RuntimeException("字段" + tmp_src_fd.field.getName() + "类型不匹配，无法赋值!");
+                                if (!(t1 || t2 || t3)){
+                                      Type runtime_dest_type=ClassUtil.generateRuntimeField(tmp_dest_fd);
+                                      Type runtime_src_type=ClassUtil.generateRuntimeField(tmp_src_fd);
+                                      TypeDefinition runtime_dest_def=ClassUtil.parseType(runtime_dest_type);
+                                      TypeDefinition runtime_src_def=ClassUtil.parseType(runtime_src_type);
+                                    PentaFunction<Object, Object, TypeDefinition, TypeDefinition, CopyParam, Object> method=BeanConvertCache.bean_method_table.get(runtime_dest_def.data_type,runtime_src_def.data_type);
+                                    if(method!=null){
+                                        _f_dest_val=method.apply(_f_dest_val,_f_src_val,runtime_dest_def,runtime_src_def,cp);//这里cp可能会有问题，我会仔细想想
+                                        try {
+                                            tmp_dest_fd.field.set(target,_f_dest_val);
+                                        } catch (IllegalArgumentException e) {
+                                            throw new RuntimeException(e);
+                                        } catch (IllegalAccessException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }else{
+                                        throw new RuntimeException("字段" + tmp_src_fd.field.getName() + "类型不匹配，无法赋值!");
+                                    }
+                                }
                                 if (t1 && _f_src_val != null) { // 如果有日期类型
                                     assginValue_DateTime(tmp_src_fd, tmp_dest_fd, target, _f_src_val);
                                 } else if (t2 && _f_src_val != null) { // String转基本类型或者封装类型
@@ -164,6 +205,95 @@ public class BeanConvertCache {
             }
         } catch (IllegalAccessException | ClassNotFoundException e) {
             throw new RuntimeException(e.getMessage());
+        }
+        return target;
+    }
+
+    public static Object copyCollection2Collection(Object target, Object src, TypeDefinition target_def, TypeDefinition src_def, CopyParam cp){
+        if (target == null||target.getClass()!=target_def.runtime_class) {//如果目标对象为空，实例化一个出来
+            try {
+                target = ClassUtil.newInstance(target_def.runtime_class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Collection<String> exclude_fields = cp.exclude_fields;
+        CopyFeature.CopyFeatureHolder cfh = cp.copyFeature;
+        try {
+            Class target_clazz = target_def.runtime_class;
+            if (target_clazz == null) {
+                target_clazz = target.getClass(); // 目标对象类
+            }
+            Class src_clazz = src_def.runtime_class;
+            if (ObjectUtils.isNotEmpty(src)) {
+                Collection src_collection = (Collection) src;
+                Class _dest_Element_clazz = null,_src_Element_clazz = null;
+                if(target_def.isGeneric){
+                    _dest_Element_clazz=target_def.parameter_type_Defines[0].runtime_class;
+                    _src_Element_clazz=src_def.parameter_type_Defines[0].runtime_class;
+                    if (target_def.parameter_type_Defines[0].isPrimitive) {
+                        _dest_Element_clazz = ClassUtils.primitiveToWrapper(_dest_Element_clazz);
+                    }
+                    if (src_def.parameter_type_Defines[0].isPrimitive) {
+                        _src_Element_clazz = ClassUtils.primitiveToWrapper(_src_Element_clazz);
+                    }
+                }
+
+                Collection dest_collection = (Collection) target;
+                // 源字段是字符串，并且目标字段是基本或者封装类型，并且目标字段不是空类型或者布尔类型
+                boolean t2 =
+                        _src_Element_clazz.isAssignableFrom(String.class)
+                                && ClassUtils.isPrimitiveOrWrapper(_dest_Element_clazz)
+                                && (!(Void.TYPE.equals(_dest_Element_clazz) || Boolean.TYPE.equals(_dest_Element_clazz)));
+                // 目标字段是字符串，并且源字段是基本或者封装类型，并且源字段不是空类型或者布尔类型
+                boolean t3 =
+                        _dest_Element_clazz.isAssignableFrom(String.class)
+                                && ClassUtils.isPrimitiveOrWrapper(_src_Element_clazz)
+                                && (!(Void.TYPE.equals(_src_Element_clazz) || Boolean.TYPE.equals(_src_Element_clazz)));
+                Iterator src_itera = src_collection.iterator();
+                while (src_itera.hasNext()) {
+                    Object _f_src_val = src_itera.next();
+                    if (t2) {
+                        if (Character.class.isAssignableFrom(_dest_Element_clazz)) {
+                            if (String.valueOf(_f_src_val).length() > 1)
+                                throw new RuntimeException(
+                                        "值" + _f_src_val + "数据长度大于一，无法给char或者Character类型赋值!");
+                            dest_collection.add(_f_src_val);
+                        } else if (Short.class.isAssignableFrom(_dest_Element_clazz)) {
+                            dest_collection.add( Short.valueOf(String.valueOf(_f_src_val)));
+                        } else if (Integer.class.isAssignableFrom(_dest_Element_clazz)) {
+                            dest_collection.add(Integer.valueOf(String.valueOf(_f_src_val)));
+                        } else if (Float.class.isAssignableFrom(_dest_Element_clazz)) {
+                            dest_collection.add(Float.valueOf(String.valueOf(_f_src_val)));
+                        } else if (Double.class.isAssignableFrom(_dest_Element_clazz)) {
+                            dest_collection.add( Double.valueOf(String.valueOf(_f_src_val)));
+                        } else if (Long.class.isAssignableFrom(_dest_Element_clazz)) {
+                            dest_collection.add( Long.valueOf(String.valueOf(_f_src_val)));
+                        }
+                    } else if (t3) {
+                        dest_collection.add( String.valueOf(_f_src_val == null ? "" : _f_src_val));
+                    } else {
+                        // 创建元素对象实例
+                        Object target_obj= ClassUtil.newInstance(_dest_Element_clazz);
+                        TypeDefinition _dest_element_def=ClassUtil.parseType(_dest_Element_clazz);
+                        TypeDefinition _src_element_def=ClassUtil.parseType(_src_Element_clazz);
+                        PentaFunction<Object, Object, TypeDefinition, TypeDefinition, CopyParam, Object> method=BeanConvertCache.bean_method_table.get(_dest_element_def.data_type,_src_element_def.data_type);
+                        if(method!=null){
+                            target_obj=method.apply(target_obj,_f_src_val,_dest_element_def,_src_element_def,cp);//这里cp可能会有问题，我会仔细想想
+                            dest_collection.add(target_obj);
+                        }
+                    }
+                }
+                return target;
+            }
+        } catch (IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage());
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
         }
         return target;
     }
