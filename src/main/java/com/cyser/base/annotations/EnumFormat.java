@@ -28,17 +28,17 @@ public @interface EnumFormat {
      * 你可以理解为，这个属性标识的是我要复制哪个枚举类的哪个字段
      * @return
      */
-    String from_field() default "name";
+    String from_field() default "";
 
     /**
      * 代表当前枚举的字段名称，如果字段本身是枚举类型，此属性可不填
      * @return
      */
-    String self_field() default "name";
+    String self_field() default "";
 
     /**
      * 代表我要复值给别的对象时当前枚举实例对应的字段
      * @return
      */
-    String to_field() default "name";
+    String to_field() default "";
 }

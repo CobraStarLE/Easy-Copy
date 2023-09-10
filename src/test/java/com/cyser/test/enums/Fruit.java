@@ -8,11 +8,9 @@ public enum Fruit {
     apple(2,"red"),pear(5,"green");
 
     @Getter
-    @Setter
     private int num;
 
     @Getter
-    @Setter
     private String color;
 
     Fruit(int num,String color){

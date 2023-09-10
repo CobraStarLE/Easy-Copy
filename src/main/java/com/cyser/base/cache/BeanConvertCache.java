@@ -55,6 +55,7 @@ public class BeanConvertCache {
         bean_method_table.put(DataTypeEnum.Collection, DataTypeEnum.Collection, (target, src, target_def, src_def, cp) -> copyCollection2Collection(target, src, target_def, src_def, cp));
         bean_method_table.put(DataTypeEnum.PrimitiveOrWrapperOrString, DataTypeEnum.Enum, (target, src, target_def, src_def, cp) -> copyPrimitiveOrWrapperOrString2Enum(target, src, target_def, src_def, cp));
         bean_method_table.put(DataTypeEnum.Enum, DataTypeEnum.PrimitiveOrWrapperOrString, (target, src, target_def, src_def, cp) -> copyEnum2PrimitiveOrWrapperOrString(target, src, target_def, src_def, cp));
+        bean_method_table.put(DataTypeEnum.Enum, DataTypeEnum.Enum, (target, src, target_def, src_def, cp) -> copyEnum2Enum(target, src, target_def, src_def, cp));
     }
 
     public static Object copyObject2Object(Object target, Object src, CopyDefinition _target_def, CopyDefinition _src_def, CopyParam cp) {
@@ -386,6 +387,52 @@ public class BeanConvertCache {
                 }
                 Object src_to_field_value = EnumUtil.getValue(src_enum_class, src_instance, src_to_field_name);
                 return BeanUtil.parsePrimitiveOrWrapperOrStringType(src_to_field_value, target_def.runtime_class);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return target;
+    }
+    public static Object copyEnum2Enum(Object target, Object src, CopyDefinition _target_def, CopyDefinition _src_def, CopyParam cp) {
+
+        if (ObjectUtils.isNotEmpty(src)) {
+            FieldDefinition target_def = (FieldDefinition) _target_def;
+            FieldDefinition src_def = (FieldDefinition) _src_def;
+            try {
+                EnumInfo src_enumInfo = src_def.getEnumInfo(target_def.field.getDeclaringClass());
+                Class src_enum_class = src_enumInfo.enum_clazz;
+                String src_self_field_name = StringUtils.isNotBlank(src_enumInfo.self_field) ? src_enumInfo.self_field : "name";
+
+                //源枚举
+                Enum src_instance;
+                if (src_enum_class.isInstance(src)) {//如果src是枚举类实例
+                    src_instance = (Enum) src;
+                } else {
+                    src_instance = EnumUtil.getInstance(src_enum_class, src_self_field_name, src);
+                    if (src_instance == null) {
+                        throw new RuntimeException("枚举类[" + src_enumInfo.enum_clazz.getName() + "]不存在字段上[" + src_self_field_name + "]值为[" + src + "]的枚举实例。");
+                    }
+                }
+
+                EnumInfo target_enumInfo = target_def.getEnumInfo(src_def.field.getDeclaringClass());
+                Class target_enum_class = target_enumInfo.enum_clazz;
+                String from_field_name=StringUtils.isNotBlank(target_enumInfo.from_field)?target_enumInfo.from_field:StringUtils.isNotBlank(src_enumInfo.to_field)?src_enumInfo.to_field:"name";
+                String target_self_field_name=StringUtils.isNotBlank(target_enumInfo.self_field)?target_enumInfo.self_field:"name";
+
+                //目标枚举
+                Object from_value=EnumUtil.getValue(src_enum_class,src_instance,from_field_name);
+                Enum target_instance=EnumUtil.getInstance(target_enum_class,target_self_field_name,from_value);
+                if(target_instance==null){
+                    throw new RuntimeException("枚举类[" + target_enumInfo.enum_clazz.getName() + "]不存在字段上[" + target_self_field_name + "]值为[" + String.valueOf(from_value) + "]的枚举实例。");
+                }
+                if (target_enumInfo.define_clazz==target_enumInfo.enum_clazz) {//如果target是枚举类实例
+                   return target_instance;
+                } else {
+                    return BeanUtil.parsePrimitiveOrWrapperOrStringType(from_value, target_def.runtime_class);
+                }
+
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {

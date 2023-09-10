@@ -3,6 +3,7 @@ package com.cyser.test.common;
 import com.cyser.base.annotations.EnumFormat;
 import com.cyser.base.utils.BeanUtil;
 import com.cyser.test.enums.Fruit;
+import com.cyser.test.enums.Shape;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -21,7 +22,7 @@ public class Entity2Entity {
         dog.name="旺财";
         dog.color="黑色";
         dog.kind=new Kind("拉布拉多");
-        dog.fruit=Fruit.pear;
+        dog.other=Fruit.pear.getNum();
         List<Kind> list=new ArrayList<>();
         list.add(new Kind("藏獒"));
         list.add(new Kind("田园犬"));
@@ -54,6 +55,9 @@ public class Entity2Entity {
 
         @EnumFormat(from_field = "num")
         public int fruit;
+
+        @EnumFormat(from_field = "num",self_field = "name")
+        public String other;
     }
 
     class Dog{
@@ -65,7 +69,8 @@ public class Entity2Entity {
 
         public List<Kind> list;
 
-        public Fruit fruit;
+        @EnumFormat(from_field = "num",self_field = "name",to_field = "color")
+        public int other;
 
     }
 
