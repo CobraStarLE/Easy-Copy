@@ -7,6 +7,7 @@ import com.cyser.base.cache.BeanConvertCache;
 import com.cyser.base.cache.TimeConvertCache;
 import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.enums.CopyFeature;
+import com.cyser.base.enums.DataTypeEnum;
 import com.cyser.base.function.PentaFunction;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.param.CopyParam;
@@ -27,41 +28,54 @@ public class BeanUtil {
     private BeanUtil() {
     }
 
-    public static void copy(Object target, Object[] source, CopyParam cp) {
-    }
-
     public static void copy(Object target, Object source, CopyParam... cp) {
         copy(target, source, target.getClass(), source.getClass(), cp);
     }
 
-    private static void copy(Object target, Object source, Class dest_clazz, Class src_clazz, CopyParam... cp) {
+    private static Object copy(Object target, Object source, Class dest_clazz, Class src_clazz, CopyParam... cp) {
         if (ObjectUtils.isEmpty(source)) {
             log.warn("被复制对象为空，停止复制。");
-            return;
+            return target;
         }
-        if (!ClassUtil.isSerializableClass(dest_clazz)) {
-            throw new RuntimeException("检查类[" + dest_clazz.getName() + "]是否是final、static、abstract,停止复制值！");
+
+        CopyParam _cp;
+        if (ObjectUtils.isNotEmpty(cp)) {
+            _cp = cp[0];
+        } else {
+            _cp = new CopyParam();
         }
-        if (!ClassUtil.isSerializableClass(src_clazz)) {
-            throw new RuntimeException("检查类[" + src_clazz.getName() + "]是否是final、static、abstract,停止复制值！");
+
+        try {
+            TypeDefinition target_def=ClassUtil.parseType(target.getClass());
+            TypeDefinition src_def=ClassUtil.parseType(source.getClass());
+
+            DataTypeEnum target_data_type=target_def.getData_type();
+            DataTypeEnum src_data_type=src_def.getData_type();
+            if (!(target_data_type==DataTypeEnum.Entity_Class&&src_data_type==DataTypeEnum.Entity_Class)) {
+                throw new RuntimeException("该方法只支持实体类（不包括带范型的实体类）复制,停止复制值！请尝试调用[void copy(Object target, Object source, TypeReference dest_tr, TypeReference src_tr, CopyParam ... cp)]方法。");
+            }
+            if (!target_def.isSerializable) {
+                throw new RuntimeException("检查类[" + dest_clazz.getName() + "]是否是final、static、abstract,停止复制值！");
+            }
+            if (!src_def.isSerializable) {
+                throw new RuntimeException("检查类[" + src_clazz.getName() + "]是否是final、static、abstract,停止复制值！");
+            }
+            return BeanConvertCache.copyEntity2Entity(target,source,target_def,src_def,_cp);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
-        if (ClassUtil.isGenericClass(dest_clazz) || ClassUtil.isGenericClass(src_clazz)) {
-            throw new RuntimeException("检查类[" + src_clazz.getName() + "," + dest_clazz.getName()
-                    + "]是否是范型类,停止复制值！请尝试调用[void copy(Object target, Object source, TypeReference dest_tr, TypeReference src_tr, CopyParam ... cp)]方法。");
-        }
-        //todo
 
     }
 
-    public static Object copy(Object target, Object source, TypeReference dest_tr, TypeReference src_tr, CopyParam... cps) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public static Object copy(Object target, Object source, TypeReference dest_tr, TypeReference src_tr, CopyParam... cp) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (!ObjectUtils.allNotNull(dest_tr, src_tr)) {
             throw new RuntimeException("参数为空,停止复制值！");
         }
-        CopyParam cp;
-        if (ObjectUtils.isNotEmpty(cps)) {
-            cp = cps[0];
+        CopyParam _cp;
+        if (ObjectUtils.isNotEmpty(cp)) {
+            _cp = cp[0];
         } else {
-            cp = new CopyParam();
+            _cp = new CopyParam();
         }
 
         Type dest_type = dest_tr.getType();
@@ -77,7 +91,7 @@ public class BeanUtil {
 
         PentaFunction<Object, Object, CopyDefinition, CopyDefinition, CopyParam, Object> copy_opera= BeanConvertCache.bean_method_table.get(src_type_def.getData_type(),dest_type_def.getData_type());
         if (copy_opera != null) {
-            target=copy_opera.apply(target,source,dest_type_def,src_type_def,cp);
+            target=copy_opera.apply(target,source,dest_type_def,src_type_def,_cp);
         }
 
         return target;

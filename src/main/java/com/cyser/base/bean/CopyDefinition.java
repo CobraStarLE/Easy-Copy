@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-public class CopyDefinition {
+public abstract class CopyDefinition {
 
     /**
      * 类类型
@@ -65,7 +65,6 @@ public class CopyDefinition {
      * 是否可序列化
      */
     public boolean isSerializable = false;
-
 
 }
 
