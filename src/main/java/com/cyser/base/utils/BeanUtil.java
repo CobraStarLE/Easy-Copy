@@ -28,14 +28,21 @@ public class BeanUtil {
     private BeanUtil() {
     }
 
-    public static void copy(Object target, Object source, CopyParam... cp) {
-        copy(target, source, target.getClass(), source.getClass(), cp);
+    public static Object copy(Object target, Object source, CopyParam... cp) {
+        if(ObjectUtils.isNotEmpty(target)&&ObjectUtils.isNotEmpty(source)){
+            return copy(target, source, target.getClass(), source.getClass(), cp);
+        }else{
+            throw new RuntimeException("请检查参数是否为空，停止复制！");
+        }
     }
 
     private static Object copy(Object target, Object source, Class dest_clazz, Class src_clazz, CopyParam... cp) {
         if (ObjectUtils.isEmpty(source)) {
-            log.warn("被复制对象为空，停止复制。");
-            return target;
+            throw new RuntimeException("被复制对象为空，停止复制。");
+        }
+
+        if(ObjectUtils.isEmpty(target)&&ObjectUtils.isEmpty(dest_clazz)){
+            throw new RuntimeException("参数target和dest_clazz不能同时为空，停止复制！");
         }
 
         CopyParam _cp;
