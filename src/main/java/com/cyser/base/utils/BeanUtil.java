@@ -32,13 +32,15 @@ public class BeanUtil {
         if(ObjectUtils.isNotEmpty(target)&&ObjectUtils.isNotEmpty(source)){
             return copy(target, source, target.getClass(), source.getClass(), cp);
         }else{
-            throw new RuntimeException("请检查参数是否为空，停止复制！");
+            log.warn("请检查参数是否为空，停止复制！");
+            return target;
         }
     }
 
     private static Object copy(Object target, Object source, Class dest_clazz, Class src_clazz, CopyParam... cp) {
         if (ObjectUtils.isEmpty(source)) {
-            throw new RuntimeException("被复制对象为空，停止复制。");
+            log.warn("被复制对象为空，停止复制。");
+            return target;
         }
 
         if(ObjectUtils.isEmpty(target)&&ObjectUtils.isEmpty(dest_clazz)){
