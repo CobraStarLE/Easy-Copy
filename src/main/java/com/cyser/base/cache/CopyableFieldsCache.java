@@ -27,7 +27,7 @@ public class CopyableFieldsCache {
      * @return Map<String, FieldDefinition>
      * @throws ClassNotFoundException
      */
-    public static Map<String, FieldDefinition> getSerialFieldDefinitions(TypeDefinition type_def)
+    public static synchronized Map<String, FieldDefinition> getSerialFieldDefinitions(TypeDefinition type_def)
             throws ClassNotFoundException {
         Class clazz=type_def.runtime_class;
         String cache_key=clazz.getName();//缓存Key
