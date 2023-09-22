@@ -106,22 +106,6 @@ public class BeanUtil {
         return target;
     }
 
-    private static void assginValue_DateTime(
-            FieldDefinition src_fd, FieldDefinition dest_fd, Object target, Object src_val)
-            throws IllegalAccessException {
-        Class<?> _src_clazz = src_fd.raw_Type_class;
-        Class<?> _dest_clazz = dest_fd.raw_Type_class;
-        if (src_fd.isPrimitive) {
-            _src_clazz = ClassUtils.primitiveToWrapper(_src_clazz);
-        }
-        if (dest_fd.isPrimitive) {
-            _dest_clazz = ClassUtils.primitiveToWrapper(_dest_clazz);
-        }
-        TernaryFunction<FieldDefinition, FieldDefinition, Object, Object> method =
-                TimeConvertCache.time_method_table.get(_dest_clazz, _src_clazz);
-        dest_fd.field.set(target, method.apply(src_fd, dest_fd, src_val));
-    }
-
     public static Object parsePrimitiveOrWrapperOrStringType(Object _f_src_val,Class _dest_clazz){
         if (Character.class.isAssignableFrom(_dest_clazz)) {
             if (String.valueOf(_f_src_val).length() > 1)

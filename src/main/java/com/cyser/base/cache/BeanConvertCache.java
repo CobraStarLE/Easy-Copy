@@ -229,7 +229,9 @@ public class BeanConvertCache {
     public static Object copyCollection2Collection(Object target, Object src, CopyDefinition _target_def, CopyDefinition _src_def, CopyParam cp) {
         TypeDefinition target_def = (TypeDefinition) _target_def;
         TypeDefinition src_def = (TypeDefinition) _src_def;
-        if (target == null || target.getClass() != target_def.runtime_class) {//如果目标对象为空，实例化一个出来
+        //如果目标对象为空，实例化一个出来
+        if (target == null || (target.getClass() != target_def.runtime_class
+                &&(!target_def.runtime_class.isAssignableFrom(target.getClass())))) {//这一行代码持怀疑态度
             try {
                 target = ClassUtil.newInstance(target_def.runtime_class);
             } catch (Exception e) {

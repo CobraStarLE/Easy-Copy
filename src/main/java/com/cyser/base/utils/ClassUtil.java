@@ -8,6 +8,8 @@ import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.classloader.ByteBuddyClassLoader;
 import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.enums.DataTypeEnum;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -32,6 +34,8 @@ public class ClassUtil {
 
     private ClassUtil() {
     }
+
+    private static Cache<String,Map<String,Field>> FIELD_CACHE = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).build();
 
     /**
      * 判断一个类是否有范型,例如<br/>
@@ -123,15 +127,7 @@ public class ClassUtil {
      * @return
      */
     public static Collection<Field> getAllFieldsCollection(Class clazz) {
-        Map<String, Field> map = new HashMap<>();
-        Class<?> currentClass = clazz;
-        while (currentClass != null) {
-            final Field[] declaredFields = currentClass.getDeclaredFields();
-            for (Field field : declaredFields) {
-                if (!map.containsKey(field.getName())) map.put(field.getName(), field);
-            }
-            currentClass = currentClass.getSuperclass();
-        }
+        Map<String, Field> map = getAllFieldsMap(clazz);
         return map.values();
     }
 
@@ -143,15 +139,25 @@ public class ClassUtil {
      * @param clazz
      * @return
      */
-    public static Map<String, Field> getAllFieldsMap(Class clazz) {
-        Map<String, Field> map = new HashMap<>();
-        Class<?> currentClass = clazz;
-        while (currentClass != null) {
-            final Field[] declaredFields = currentClass.getDeclaredFields();
-            for (Field field : declaredFields) {
-                if (!map.containsKey(field.getName())) map.put(field.getName(), field);
+    public static synchronized Map<String, Field> getAllFieldsMap(Class clazz) {
+        String cache_key=clazz.getName();
+        Map<String, Field> map = FIELD_CACHE.getIfPresent(cache_key);
+        if (map == null) {
+            synchronized (ClassUtil.class){
+                map = FIELD_CACHE.getIfPresent(cache_key);
+                if(map==null){
+                    map=new HashMap<>();
+                    Class<?> currentClass = clazz;
+                    while (currentClass != null) {
+                        final Field[] declaredFields = currentClass.getDeclaredFields();
+                        for (Field field : declaredFields) {
+                            if (!map.containsKey(field.getName())) map.put(field.getName(), field);
+                        }
+                        currentClass = currentClass.getSuperclass();
+                    }
+                    FIELD_CACHE.put(cache_key,map);
+                }
             }
-            currentClass = currentClass.getSuperclass();
         }
         return map;
     }
