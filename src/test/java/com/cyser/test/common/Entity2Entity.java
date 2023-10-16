@@ -1,10 +1,10 @@
 package com.cyser.test.common;
 
 import com.cyser.base.annotations.EnumFormat;
+import com.cyser.base.type.TypeReference;
 import com.cyser.base.utils.BeanUtil;
 import com.cyser.test.enums.Fruit;
 import com.cyser.test.enums.Shape;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.lang.reflect.InvocationTargetException;

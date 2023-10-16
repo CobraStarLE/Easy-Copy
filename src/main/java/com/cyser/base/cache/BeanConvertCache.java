@@ -13,6 +13,7 @@ import com.cyser.base.utils.BeanUtil;
 import com.cyser.base.utils.ClassUtil;
 import com.cyser.base.utils.EnumUtil;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
@@ -26,10 +27,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -154,7 +152,20 @@ public class BeanConvertCache {
                             // 如果两者类型相同，直接赋值
                             if (ClassUtils.isAssignable(
                                     tmp_src_fd.runtime_class, tmp_dest_fd.runtime_class, true)) {
-                                tmp_dest_fd.field.set(target, _f_src_val);
+                                if(tmp_src_fd.data_type==DataTypeEnum.Collection
+                                        ||tmp_src_fd.data_type==DataTypeEnum.Map){//如果字段类型是集合或者Map
+                                    if(tmp_src_fd.parameter_Type_classes==tmp_dest_fd.parameter_Type_classes){//如果两者参数类型相同，直接赋值
+                                        tmp_dest_fd.field.set(target, _f_src_val);
+                                    }else{
+                                        PentaFunction<Object, Object, CopyDefinition, CopyDefinition, CopyParam, Object> copy_opera= BeanConvertCache.bean_method_table.get(tmp_src_fd.data_type,tmp_dest_fd.data_type);
+                                        if (copy_opera != null) {
+                                            Object tmp_f_dest_val=copy_opera.apply(_f_dest_val,_f_src_val,tmp_dest_fd,tmp_src_fd,cp);
+                                            tmp_dest_fd.field.set(target, tmp_f_dest_val);
+                                        }
+                                    }
+                                }else{
+                                    tmp_dest_fd.field.set(target, _f_src_val);
+                                }
                             } else {
                                 Class<?> _src_clazz = tmp_src_fd.runtime_class;
                                 Class<?> _dest_clazz = tmp_dest_fd.runtime_class;
@@ -308,7 +319,13 @@ public class BeanConvertCache {
                                 target_obj = method.apply(target_obj, _f_src_val, _dest_element_def, _src_element_def, cp);//这里cp可能会有问题，我会仔细想想
                             }
                         }
-                        dest_collection.add(target_obj);
+                        try {
+                            dest_collection.add(target_obj);
+                        } catch (UnsupportedOperationException e) {
+                            target=ClassUtil.newInstance(target_def.runtime_class);
+                            dest_collection= (Collection) target;
+                            dest_collection.add(target_obj);
+                        }
                     }
                 }
                 return target;
@@ -460,6 +477,4 @@ public class BeanConvertCache {
                 TimeConvertCache.time_method_table.get(_dest_clazz, _src_clazz);
         dest_fd.field.set(target, method.apply(src_fd, dest_fd, src_val));
     }
-
-
 }

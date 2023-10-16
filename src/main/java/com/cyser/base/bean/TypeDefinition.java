@@ -1,9 +1,10 @@
 package com.cyser.base.bean;
 
 import com.cyser.base.enums.DataTypeEnum;
+import lombok.Data;
 
 import java.util.Map;
-
+@Data
 public class TypeDefinition extends CopyDefinition{
 
     /**

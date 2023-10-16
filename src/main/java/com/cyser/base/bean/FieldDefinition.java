@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Map;
 
-public class FieldDefinition extends CopyDefinition {
+public class FieldDefinition extends TypeDefinition {
 
     public Field field;
 

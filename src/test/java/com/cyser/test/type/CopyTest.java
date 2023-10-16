@@ -1,8 +1,8 @@
 package com.cyser.test.type;
 
 import com.cyser.base.param.CopyParam;
+import com.cyser.base.type.TypeReference;
 import com.cyser.base.utils.BeanUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

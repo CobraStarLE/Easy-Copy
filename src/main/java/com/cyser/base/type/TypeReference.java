@@ -24,9 +24,9 @@ import java.lang.reflect.Type;
  * which can be passed to methods that accept TypeReference, or resolved
  * using <code>TypeFactory</code> to obtain {@link ResolvedType}.
  */
-public abstract class TypeReference<T>
+public class TypeReference<T> implements Comparable<TypeReference<T>>
 {
-    protected final Type _type;
+    protected Type _type;
 
     protected TypeReference()
     {
@@ -45,5 +45,14 @@ public abstract class TypeReference<T>
     }
 
     public Type getType() { return _type; }
+
+    public void setType(Type _type){
+        this._type=_type;
+    }
+
+    @Override
+    public int compareTo(TypeReference<T> o) {
+        return 0;
+    }
 }
 

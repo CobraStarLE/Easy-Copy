@@ -11,7 +11,7 @@ import com.cyser.base.enums.DataTypeEnum;
 import com.cyser.base.function.PentaFunction;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.param.CopyParam;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.cyser.base.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;

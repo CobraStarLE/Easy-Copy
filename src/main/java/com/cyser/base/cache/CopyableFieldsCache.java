@@ -41,7 +41,7 @@ public class CopyableFieldsCache {
         Map<String, FieldDefinition> serial_fd_map = FIELDS_CACHE.get(cache_key); // 返回结果Map
         if (ObjectUtils.anyNull(serial_fd_map)) {
             synchronized (CopyableFieldsCache.class) {
-                serial_fd_map = FIELDS_CACHE.get(clazz.getName());
+                serial_fd_map = FIELDS_CACHE.get(cache_key);
                 if (ObjectUtils.anyNull(serial_fd_map)) {
                     Collection<Field> all_dest_fields_list =
                             ClassUtil.getAllFieldsCollection(clazz); // 目标类所有字段
@@ -67,7 +67,7 @@ public class CopyableFieldsCache {
                         serial_fd_map = new HashMap<>();
                     }
 
-                    FIELDS_CACHE.put(clazz.getName(), serial_fd_map);
+                    FIELDS_CACHE.put(cache_key, serial_fd_map);
                 }
             }
         }

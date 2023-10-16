@@ -1,9 +1,9 @@
 package com.cyser.test.common;
 
+import com.cyser.base.type.TypeReference;
 import com.cyser.base.utils.BeanUtil;
 import com.cyser.test.Boy;
 import com.cyser.test.User;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

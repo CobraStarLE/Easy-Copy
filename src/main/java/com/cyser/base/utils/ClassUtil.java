@@ -294,7 +294,6 @@ public class ClassUtil {
                     }
                 }
                 td.parameter_type_corresponds=parameter_type_corresponds;
-
             }
         } else if (td.class_type == ClassTypeEnum.GenericArrayType) {
             td.isGeneric = true;
@@ -376,22 +375,48 @@ public class ClassUtil {
         // 如果是泛型
         if (generic_type instanceof ParameterizedType) {
             fd.isGeneric = true;
+            fd.class_type=ClassTypeEnum.ParameterizedType;
             Type[] param_types = ((ParameterizedType) generic_type).getActualTypeArguments();
             Class[] parameter_Type_classes = new Class[param_types.length];
+            TypeDefinition[] parameter_type_Defines = new TypeDefinition[param_types.length];
+
             for (int i = 0; i < param_types.length; i++) {
                 ClassTypeEnum classType=ClassTypeEnum.valueOf(param_types[i]);
+
                 if (classType==ClassTypeEnum.TypeVariable) {//如果是List<V>这种
                     parameter_Type_classes[i] = parameter_type_corresponds.get(param_types[i].getTypeName());
                 }else if(classType==ClassTypeEnum.Class){//如果是List<Cat>这种
                     parameter_Type_classes[i] = ClassUtils.getClass(param_types[i].getTypeName());
                 }
+                parameter_type_Defines[i] = parseType(parameter_Type_classes[i]);
             }
+            fd.parameter_type_Defines=parameter_type_Defines;
             fd.parameter_Type_classes = parameter_Type_classes;
         }else if(fd.raw_type instanceof TypeVariable){//如果是V v这种
             TypeVariable _type= (TypeVariable) fd.raw_type;
+            fd.class_type=ClassTypeEnum.TypeVariable;
             fd.runtime_class=parameter_type_corresponds.get(_type.getTypeName());
         }else if(fd.raw_type instanceof WildcardType){//如果是List<?>这种
-
+            fd.isGeneric = true;
+            fd.class_type=ClassTypeEnum.WildcardType;
+            WildcardType wildcardType = (WildcardType) type;
+            Type[] upperBounds = wildcardType.getUpperBounds();
+            if (ObjectUtils.isNotEmpty(upperBounds)) {
+                fd.upperBounds = parseType((Class) upperBounds[0]);
+            }
+            Type[] lowerBounds = wildcardType.getLowerBounds();
+            if (ObjectUtils.isNotEmpty(lowerBounds)) {
+                fd.lowerBounds = parseType((Class) lowerBounds[0]);
+            }
+        }else if(fd.class_type==ClassTypeEnum.Class){
+            fd.class_type=ClassTypeEnum.Class;
+            Class clazz = (Class) type;
+            //判断是否是数组
+            if (clazz.getComponentType() != null) {
+                fd.isArray = true;
+                TypeDefinition componetClassDefine = parseType(clazz.getComponentType());
+                fd.componetClassDefine = componetClassDefine;
+            }
         }
         fd.setData_type(DataTypeEnum.valueOf(fd.runtime_class));
         // 判断是否是基本类型

@@ -2,6 +2,7 @@ package com.cyser.base.bean;
 
 import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.enums.DataTypeEnum;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+@Data
 public abstract class CopyDefinition {
 
     /**

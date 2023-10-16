@@ -1,8 +1,8 @@
 package com.cyser.test;
 
+import com.cyser.base.type.TypeReference;
 import com.cyser.base.utils.BeanUtil;
 import com.cyser.test.type.Cat;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.lang.reflect.InvocationTargetException;
 
