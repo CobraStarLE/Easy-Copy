@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 public @interface EnumFormat {
 
     /**
-     * 当在对象复制时，该id一般为对立字段所在的类Class，如果不写的话就默认时当前字段所在类Class
+     * 当在对象复制时，该id一般为对应字段所在的类Class，如果不写的话就默认时当前字段所在类Class
      * @return
      */
     Class id() default Object.class;
@@ -26,6 +26,8 @@ public @interface EnumFormat {
      * 在复制源对象对应的字段时，该属性用来标识被复制对象对应的枚举的字段名，如果字段本身是枚举类型，此属性可不填
      * <br/>
      * 你可以理解为，这个属性标识的是我要复制哪个枚举类的哪个字段
+     * <br/>
+     * 用在拷贝字段上
      * @return
      */
     String from_field() default "";
@@ -38,6 +40,8 @@ public @interface EnumFormat {
 
     /**
      * 代表我要复值给别的对象时当前枚举实例对应的字段
+     * <br/>
+     * 用在被拷贝字段上
      * @return
      */
     String to_field() default "";

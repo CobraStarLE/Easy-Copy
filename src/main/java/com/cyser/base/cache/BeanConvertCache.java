@@ -16,6 +16,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -131,6 +132,11 @@ public class BeanConvertCache {
                     // 复制源对象字段值到目标对象
                     FieldDefinition tmp_src_fd, tmp_dest_fd;
                     Iterator<FieldDefinition> serial_src_fd_itera = serial_src_fd_list.iterator();
+                    boolean case_sensitive=cfh.isEnabled(CopyFeature.CASE_SENSITIVE);//字段名称是否区分大小写
+                    if(!case_sensitive){
+                        Map<String,FieldDefinition> _serial_dest_fd_map=new CaseInsensitiveMap<>(serial_dest_fd_map);
+                        serial_dest_fd_map=_serial_dest_fd_map;
+                    }
                     loop_copy_fields:
                     while (serial_src_fd_itera.hasNext()) {
                         tmp_src_fd = serial_src_fd_itera.next(); // 源对象字段

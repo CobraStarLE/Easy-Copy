@@ -1,6 +1,8 @@
 package com.cyser.test.common;
 
 import com.cyser.base.annotations.EnumFormat;
+import com.cyser.base.enums.CopyFeature;
+import com.cyser.base.param.CopyParam;
 import com.cyser.base.type.TypeReference;
 import com.cyser.base.utils.BeanUtil;
 import com.cyser.test.enums.Fruit;
@@ -28,7 +30,8 @@ public class Entity2Entity {
         list.add(new Kind("田园犬"));
         dog.list=list;
 
-        Cat cat= (Cat) BeanUtil.copy(null, dog, new TypeReference<Cat<Object>>() {},new TypeReference<Dog>() {});
+        CopyParam cp=new CopyParam(CopyFeature.CASE_SENSITIVE,false);
+        Cat cat= (Cat) BeanUtil.copy(null, dog, new TypeReference<Cat<Object>>() {},new TypeReference<Dog>() {},cp);
         System.out.println();
     }
 
@@ -45,7 +48,7 @@ public class Entity2Entity {
     class Cat<T>{
 
         public Cat(){}
-        public String name;
+        public String NAME;
 
         public String color;
 

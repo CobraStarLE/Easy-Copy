@@ -1,8 +1,10 @@
 package com.cyser.base.param;
 
 import com.cyser.base.enums.CopyFeature;
+import lombok.Builder;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -47,6 +49,13 @@ public class CopyParam {
     public Map<String,CopyParam> subCopyParam;
 
     public CopyParam() {
+        this.exclude_fields=new ArrayList<>();
         this.copyFeature = new CopyFeature.CopyFeatureHolder();
     }
+
+    public CopyParam(CopyFeature feature, boolean state){
+        this();
+        this.copyFeature.configure(feature,state);
+    }
+
 }

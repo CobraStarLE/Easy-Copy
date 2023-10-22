@@ -80,6 +80,15 @@ public class BeanUtil {
         if (!ObjectUtils.allNotNull(dest_tr, src_tr)) {
             throw new RuntimeException("参数为空,停止复制值！");
         }
+        Type dest_type = dest_tr.getType();
+        Type src_type = src_tr.getType();
+
+        TypeDefinition dest_type_def = ClassUtil.parseType(dest_type);
+        TypeDefinition src_type_def = ClassUtil.parseType(src_type);
+        return copy(target,source,dest_type_def,src_type_def,cp);
+    }
+
+    public static Object copy(Object target, Object source, TypeDefinition target_type_def, TypeDefinition src_type_def, CopyParam... cp) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         CopyParam _cp;
         if (ObjectUtils.isNotEmpty(cp)) {
             _cp = cp[0];
@@ -87,20 +96,16 @@ public class BeanUtil {
             _cp = new CopyParam();
         }
 
-        Type dest_type = dest_tr.getType();
-        Type src_type = src_tr.getType();
-        TypeDefinition dest_type_def = ClassUtil.parseType(dest_type);
-        TypeDefinition src_type_def = ClassUtil.parseType(src_type);
-        if (dest_type_def.class_type == ClassTypeEnum.Class && dest_type_def.isGeneric) {
-            throw new RuntimeException("因为类[" + dest_type_def.runtime_class.getName() + "]带有范型，请正确传参数dest_tr.");
+        if (target_type_def.class_type == ClassTypeEnum.Class && target_type_def.isGeneric) {
+            throw new RuntimeException("因为类[" + target_type_def.runtime_class.getName() + "]带有范型，请正确传参数dest_tr.");
         }
         if (src_type_def.class_type == ClassTypeEnum.Class && src_type_def.isGeneric) {
             throw new RuntimeException("因为类[" + src_type_def.runtime_class.getName() + "]带有范型，请正确传参数src_tr.");
         }
 
-        PentaFunction<Object, Object, CopyDefinition, CopyDefinition, CopyParam, Object> copy_opera= BeanConvertCache.bean_method_table.get(src_type_def.getData_type(),dest_type_def.getData_type());
+        PentaFunction<Object, Object, CopyDefinition, CopyDefinition, CopyParam, Object> copy_opera= BeanConvertCache.bean_method_table.get(src_type_def.getData_type(),target_type_def.getData_type());
         if (copy_opera != null) {
-            target=copy_opera.apply(target,source,dest_type_def,src_type_def,_cp);
+            target=copy_opera.apply(target,source,target_type_def,src_type_def,_cp);
         }
 
         return target;

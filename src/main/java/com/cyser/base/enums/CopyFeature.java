@@ -2,7 +2,8 @@ package com.cyser.base.enums;
 
 public enum CopyFeature {
     COPY_NULL_VALUE(true), // 当为true时，源对象字段为null时拷贝空值null
-    FORCE_OVERWRITE(true); // 当为true时，目标对象字段有值时强制覆盖
+    FORCE_OVERWRITE(true), // 当为true时，目标对象字段有值时强制覆盖
+    CASE_SENSITIVE(true); // 当为true时，字段名称区分大小写
 
     private final boolean _defaultState;//默认状态（是否启用：true，启用；false：不启用）
     private final int _mask;//掩码
