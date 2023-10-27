@@ -3,11 +3,10 @@ package com.cyser.test.common;
 import com.cyser.base.annotations.EnumFormat;
 import com.cyser.base.enums.CopyFeature;
 import com.cyser.base.param.CopyParam;
+import com.cyser.base.param.CopyParamBean;
 import com.cyser.base.type.TypeReference;
 import com.cyser.base.utils.BeanUtil;
 import com.cyser.test.enums.Fruit;
-import com.cyser.test.enums.Shape;
-import com.google.common.annotations.VisibleForTesting;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public class Entity2Entity {
         list.add(new Kind("田园犬"));
         dog.list=list;
 
-        CopyParam cp=new CopyParam(CopyFeature.CASE_SENSITIVE,false);
+        CopyParam cp=new CopyParam();
         Cat cat= (Cat) BeanUtil.copy(null, dog, new TypeReference<Cat<Object>>() {},new TypeReference<Dog>() {},cp);
         System.out.println();
     }

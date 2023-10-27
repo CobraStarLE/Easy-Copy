@@ -1,26 +1,19 @@
 package com.cyser.base.utils;
 
 import com.cyser.base.bean.CopyDefinition;
-import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.cache.BeanConvertCache;
-import com.cyser.base.cache.TimeConvertCache;
 import com.cyser.base.enums.ClassTypeEnum;
-import com.cyser.base.enums.CopyFeature;
 import com.cyser.base.enums.DataTypeEnum;
 import com.cyser.base.function.PentaFunction;
-import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.param.CopyParam;
+import com.cyser.base.param.CopyParamBean;
 import com.cyser.base.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Iterator;
 
 @Slf4j
 public class BeanUtil {

@@ -1,5 +1,6 @@
 package com.cyser.base.utils;
 
+import com.cyser.base.annotations.CopyParamIdentifier;
 import com.cyser.base.annotations.EnumFormat;
 import com.cyser.base.annotations.TimeFormat;
 import com.cyser.base.bean.EnumInfo;
@@ -306,16 +307,30 @@ public class ClassUtil {
             WildcardType wildcardType = (WildcardType) type;
             Type[] upperBounds = wildcardType.getUpperBounds();
             if (ObjectUtils.isNotEmpty(upperBounds)) {
-                td.upperBounds = parseType((Class) upperBounds[0]);
+                td.upperBounds = parseType(upperBounds[0]);
             }
             Type[] lowerBounds = wildcardType.getLowerBounds();
             if (ObjectUtils.isNotEmpty(lowerBounds)) {
-                td.lowerBounds = parseType((Class) lowerBounds[0]);
+                td.lowerBounds = parseType(lowerBounds[0]);
             }
         } else if (td.class_type == ClassTypeEnum.TypeVariable) {
             td.isGeneric = false;
         }
-        td.setData_type(DataTypeEnum.valueOf(td.runtime_class));
+        DataTypeEnum dataType=DataTypeEnum.valueOf(td.runtime_class);
+        td.setData_type(dataType);
+        //如果是实体类
+        if(dataType==DataTypeEnum.Entity_Class){
+            //获取CopyParamIdentifier
+            CopyParamIdentifier[] copyParamIdentifiers= (CopyParamIdentifier[]) td.runtime_class.getAnnotationsByType(CopyParamIdentifier.class);
+            if(ObjectUtils.isNotEmpty(copyParamIdentifiers)){
+                List<String> copy_param_ids=new ArrayList<>();
+                for (int i = 0; i < copyParamIdentifiers.length; i++) {
+                    CopyParamIdentifier identifier=copyParamIdentifiers[i];
+                    copy_param_ids.add(identifier.id());
+                }
+                td.copy_param_ids=copy_param_ids;
+            }
+        }
         return td;
     }
 
@@ -362,11 +377,12 @@ public class ClassUtil {
      * @param field
      * @return
      */
-    public static FieldDefinition parseField(Field field,Map<String,Class> parameter_type_corresponds) throws ClassNotFoundException {
+    public static FieldDefinition parseField(Field field,Class entity_runtime_clazz,Map<String,Class> parameter_type_corresponds) throws ClassNotFoundException {
         Type type = field.getType();
         Type generic_type = field.getGenericType();
         FieldDefinition fd = new FieldDefinition();
         if (!field.isAccessible()) field.setAccessible(true);
+        fd.entity_runtime_clazz=entity_runtime_clazz;
         fd.field = field;
         fd.raw_type = type;
         fd.genericType = generic_type;
@@ -429,10 +445,11 @@ public class ClassUtil {
         // 判断是否是基本类型或者基本封装类型
         fd.isPrimitiveOrWrapper = fd.isPrimitive || fd.isPrimitiveWrapper;
         // 判断是否是日期字段
-        if (ClassUtils.isAssignable(fd.raw_Type_class, LocalDate.class)
-                || ClassUtils.isAssignable(fd.raw_Type_class, LocalDateTime.class)
-                || ClassUtils.isAssignable(fd.raw_Type_class, Date.class)
-                || (ClassUtils.isAssignable(fd.raw_Type_class, String.class)
+        if (ClassUtils.isAssignable(fd.runtime_class, LocalDate.class)
+                || ClassUtils.isAssignable(fd.runtime_class, LocalDateTime.class)
+                || ClassUtils.isAssignable(fd.runtime_class, Date.class)
+                || ((ClassUtils.isAssignable(fd.runtime_class, String.class)||
+                ClassUtils.isAssignable(fd.runtime_class, Long.class))
                 && field.getAnnotation(TimeFormat.class) != null)) {
             fd.isTime = true;
             TimeFormat timeFormat = field.getAnnotation(TimeFormat.class);
@@ -440,6 +457,7 @@ public class ClassUtil {
         }
         // 判断是否是可序列化字段
         if (!isSerializableField(field)) fd.isSerializable = false;
+
         // 解析枚举
         EnumFormat[] enumFormats=field.getAnnotationsByType(EnumFormat.class);
         Map<Class,EnumInfo> enumInfos=new HashMap();
@@ -468,6 +486,17 @@ public class ClassUtil {
             enumInfos.put(fd.field.getDeclaringClass(),info);
         }
         fd.enumInfos=enumInfos;
+
+        CopyParamIdentifier[] copyParamIdentifiers=field.getAnnotationsByType(CopyParamIdentifier.class);
+        if(ObjectUtils.isNotEmpty(copyParamIdentifiers)){
+            List<String> copy_param_ids=new ArrayList<>();
+            for (int i = 0; i < copyParamIdentifiers.length; i++) {
+                CopyParamIdentifier identifier=copyParamIdentifiers[i];
+                copy_param_ids.add(identifier.id());
+            }
+            fd.copy_param_ids=copy_param_ids;
+        }
+
         return fd;
     }
 

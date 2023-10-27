@@ -14,6 +14,11 @@ import java.util.Map;
 public abstract class CopyDefinition {
 
     /**
+     * 拷贝CopyParamBean对应的id列表
+     */
+    public List<String> copy_param_ids;
+
+    /**
      * 类类型
      */
     public ClassTypeEnum class_type;

@@ -9,11 +9,13 @@ import com.cyser.base.enums.DataTypeEnum;
 import com.cyser.base.function.PentaFunction;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.param.CopyParam;
+import com.cyser.base.param.CopyParam;
+import com.cyser.base.param.CopyParamBean;
 import com.cyser.base.utils.BeanUtil;
 import com.cyser.base.utils.ClassUtil;
+import com.cyser.base.utils.CopyParmaUtil;
 import com.cyser.base.utils.EnumUtil;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
@@ -68,13 +70,14 @@ public class BeanConvertCache {
                 throw new RuntimeException(e);
             }
         }
+        CopyParamBean copyParamBean= CopyParmaUtil.getById();
         CopyFeature.CopyFeatureHolder cfh = cp.copyFeature;
         if (ObjectUtils.allNotNull(src) || (ObjectUtils.allNull(src) && cfh.isEnabled(CopyFeature.COPY_NULL_VALUE))) {
             target = src;
         }
+
         return target;
     }
-
 
     public static Object copyEntity2Entity(Object target, Object src, CopyDefinition _target_def, CopyDefinition _src_def, CopyParam cp) {
         TypeDefinition target_def = (TypeDefinition) _target_def;

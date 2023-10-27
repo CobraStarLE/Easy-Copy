@@ -8,7 +8,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TimeFormat {
-
     TimestampUtil.FastDateFormatPattern value() default
             TimestampUtil.FastDateFormatPattern.ISO_DATETIME_FORMAT;
 }

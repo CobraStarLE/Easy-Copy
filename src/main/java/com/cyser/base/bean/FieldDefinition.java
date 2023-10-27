@@ -7,9 +7,15 @@ import org.apache.commons.lang3.ObjectUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class FieldDefinition extends TypeDefinition {
+
+    /**
+     * 对应实体类上Class
+     */
+    public Class entity_runtime_clazz;
 
     public Field field;
 

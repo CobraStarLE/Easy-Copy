@@ -1,6 +1,7 @@
 package com.cyser.test.type;
 
 import com.cyser.base.param.CopyParam;
+import com.cyser.base.param.CopyParamBean;
 import com.cyser.base.type.TypeReference;
 import com.cyser.base.utils.BeanUtil;
 

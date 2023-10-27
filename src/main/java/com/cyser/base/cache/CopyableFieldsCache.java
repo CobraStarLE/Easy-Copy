@@ -52,7 +52,7 @@ public class CopyableFieldsCache {
                         Collection<FieldDefinition> serial_fd_list; // 目标类可序列化字段
                         List<FieldDefinition> all_fd_list = new ArrayList<>(); // 目标类所有字段
                         for (Field field : all_dest_fields_list) {
-                            all_fd_list.add(ClassUtil.parseField(field,parameter_type_corresponds));
+                            all_fd_list.add(ClassUtil.parseField(field,clazz,parameter_type_corresponds));
                         }
                         serial_fd_list =
                                 all_fd_list.stream().filter(o -> o.isSerializable).collect(Collectors.toList());
