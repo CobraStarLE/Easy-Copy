@@ -137,13 +137,18 @@ public class BeanConvertCache {
                         Map<String,FieldDefinition> _serial_dest_fd_map=new CaseInsensitiveMap<>(serial_dest_fd_map);
                         serial_dest_fd_map=_serial_dest_fd_map;
                     }
+                    Field tmp_dest_field,tmp_src_field;
                     loop_copy_fields:
                     while (serial_src_fd_itera.hasNext()) {
                         tmp_src_fd = serial_src_fd_itera.next(); // 源对象字段
                         tmp_dest_fd = serial_dest_fd_map.get(tmp_src_fd.field.getName()); // 目标对象字段
                         if (tmp_dest_fd != null) {
-                            Object _f_dest_val = tmp_dest_fd.field.get(target); // 目标对象字段值
-                            Object _f_src_val = tmp_src_fd.field.get(src); // 源对象字段值
+                            tmp_dest_field=tmp_dest_fd.field;
+                            tmp_src_field=tmp_src_fd.field;
+                            tmp_dest_field.setAccessible(true);
+                            tmp_src_field.setAccessible(true);
+                            Object _f_dest_val = tmp_dest_field.get(target); // 目标对象字段值
+                            Object _f_src_val = tmp_src_field.get(src); // 源对象字段值
 
                             // 如果不拷贝空值
                             if (_f_src_val == null
@@ -190,7 +195,8 @@ public class BeanConvertCache {
                                 if (!(t1 || t2 || t3)) {
                                     PentaFunction<Object, Object, CopyDefinition, CopyDefinition, CopyParam, Object> method;
                                     // 如果有枚举
-                                    if (tmp_src_fd.isEnum(tmp_dest_fd.field.getDeclaringClass()) || tmp_dest_fd.isEnum(tmp_src_fd.field.getDeclaringClass())) {
+                                    if (tmp_src_fd.isEnum(tmp_dest_fd.field.getDeclaringClass())
+                                            || tmp_dest_fd.isEnum(tmp_src_fd.field.getDeclaringClass())) {
                                         method = BeanConvertCache.bean_method_table.get(tmp_src_fd.getData_type(tmp_dest_fd.field.getDeclaringClass()), tmp_dest_fd.getData_type(tmp_src_fd.field.getDeclaringClass()));
                                         if (method != null) {
                                             _f_dest_val=method.apply(_f_dest_val, _f_src_val, tmp_dest_fd, tmp_src_fd, cp);

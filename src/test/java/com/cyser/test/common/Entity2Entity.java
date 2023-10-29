@@ -48,9 +48,9 @@ public class Entity2Entity {
     class Cat<T>{
 
         public Cat(){}
-        public String NAME;
+        private String NAME;
 
-        public String color;
+        private String color;
 
         public T kind;
 
