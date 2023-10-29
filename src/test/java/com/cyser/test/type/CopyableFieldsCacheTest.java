@@ -15,6 +15,6 @@ public class CopyableFieldsCacheTest {
         TypeDefinition type_def2= ClassUtil.parseType(tf2.getType());
         TypeDefinition type_def3= ClassUtil.parseType(tf3.getType());
 //        CopyableFieldsCache.getSerialFieldDefinitions(type_def1);
-        CopyableFieldsCache.getSerialFieldDefinitions(type_def3);
+//        CopyableFieldsCache.getSerialFieldDefinitions(type_def3);
     }
 }

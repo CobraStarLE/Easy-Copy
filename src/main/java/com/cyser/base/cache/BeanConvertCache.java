@@ -95,9 +95,10 @@ public class BeanConvertCache {
             }
             Class src_clazz = src_def.runtime_class;
             if (ObjectUtils.isNotEmpty(src)) {
+                ClassLoader target_cl=src.getClass().getClassLoader();
                 // 获取目标类字段
                 Map<String, FieldDefinition> serial_dest_fd_map =
-                        CopyableFieldsCache.getSerialFieldDefinitions(target_def);
+                        CopyableFieldsCache.getSerialFieldDefinitions(target_cl,target_def);
                 if (serial_dest_fd_map.size() == 0) {
                     throw new IllegalArgumentException("目标类[" + target_clazz.getName() + "]未包含任何可序列化字段.");
                 }
@@ -116,7 +117,7 @@ public class BeanConvertCache {
 
                     // 获取源对象字段
                     Map<String, FieldDefinition> serial_src_fd_map =
-                            CopyableFieldsCache.getSerialFieldDefinitions(src_def);
+                            CopyableFieldsCache.getSerialFieldDefinitions(target_cl,src_def);
                     Collection<FieldDefinition> serial_src_fd_list; // 源对象所有可序列化字段
                     if (serial_src_fd_map.size() == 0) {
                         log.warn("源对象的可序列化字段为空，停止复制！");

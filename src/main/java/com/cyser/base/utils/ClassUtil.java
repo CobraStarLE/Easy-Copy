@@ -10,9 +10,7 @@ import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.enums.DataTypeEnum;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.description.type.TypeDescription;
@@ -35,7 +33,9 @@ public class ClassUtil {
     private ClassUtil() {
     }
 
-    private static Cache<String,Map<String,Field>> FIELD_CACHE = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).build();
+    public static final Integer DEFAULT_HASHCODE=-999999999;
+
+    private static Table<Integer,String,Map<String,Field>> FIELD_CACHE = HashBasedTable.create();
 
     /**
      * 判断一个类是否有范型,例如<br/>
@@ -66,8 +66,8 @@ public class ClassUtil {
      * @param clazz
      * @return
      */
-    public static List<Field> getSerializableFields(Class clazz) {
-        List<Field> fields = Lists.newArrayList(getAllFieldsMap(clazz).values()); // 目标类所有字段
+    public static List<Field> getSerializableFields(ClassLoader classLoader,Class clazz) throws ClassNotFoundException {
+        List<Field> fields = Lists.newArrayList(getAllFieldsMap(classLoader,clazz).values()); // 目标类所有字段
         return getSerializableFields(fields);
     }
 
@@ -126,8 +126,8 @@ public class ClassUtil {
      * @param clazz
      * @return
      */
-    public static Collection<Field> getAllFieldsCollection(Class clazz) {
-        Map<String, Field> map = getAllFieldsMap(clazz);
+    public static Collection<Field> getAllFieldsCollection(ClassLoader classLoader,Class clazz) throws ClassNotFoundException {
+        Map<String, Field> map = getAllFieldsMap(classLoader,clazz);
         return map.values();
     }
 
@@ -139,12 +139,17 @@ public class ClassUtil {
      * @param clazz
      * @return
      */
-    public static synchronized Map<String, Field> getAllFieldsMap(Class clazz) {
+    public static synchronized Map<String, Field> getAllFieldsMap(ClassLoader classLoader,Class clazz) throws ClassNotFoundException {
         String cache_key=clazz.getName();
-        Map<String, Field> map = FIELD_CACHE.getIfPresent(cache_key);
+        ClassLoader curr_classLoader=clazz.getClassLoader();
+        if(classLoader!=null&&curr_classLoader!=null&&classLoader!=clazz.getClassLoader()){
+            clazz=classLoader.loadClass(clazz.getName());
+        }
+        Integer hashCode=classLoader==null?DEFAULT_HASHCODE:classLoader.hashCode();
+        Map<String, Field> map = FIELD_CACHE.get(hashCode,cache_key);
         if (map == null) {
             synchronized (ClassUtil.class){
-                map = FIELD_CACHE.getIfPresent(cache_key);
+                map = FIELD_CACHE.get(classLoader,cache_key);
                 if(map==null){
                     map=new HashMap<>();
                     Class<?> currentClass = clazz;
@@ -155,7 +160,7 @@ public class ClassUtil {
                         }
                         currentClass = currentClass.getSuperclass();
                     }
-                    FIELD_CACHE.put(cache_key,map);
+                    FIELD_CACHE.put(hashCode,cache_key,map);
                 }
             }
         }

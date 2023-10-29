@@ -67,7 +67,7 @@ public class Test {
         }
 
 
-        Map<String, Field> cat2Map= ClassUtil.getAllFieldsMap(new Cat<String>(){}.getClass());
+        Map<String, Field> cat2Map= ClassUtil.getAllFieldsMap(null,new Cat<String>(){}.getClass());
 
         System.out.println(Dog.class);
 

@@ -4,7 +4,9 @@ import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.utils.ClassUtil;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CopyableFieldsCache {
 
-    public static Map<String, Map<String, FieldDefinition>> FIELDS_CACHE = Maps.newHashMap();
+    public static Table<Integer,String, Map<String, FieldDefinition>> FIELDS_CACHE = HashBasedTable.create();
 
     /**
      * 返回封装Class中可序列化的字段Map，
@@ -27,8 +29,12 @@ public class CopyableFieldsCache {
      * @return Map<String, FieldDefinition>
      * @throws ClassNotFoundException
      */
-    public static synchronized Map<String, FieldDefinition> getSerialFieldDefinitions(TypeDefinition type_def)
+    public static synchronized Map<String, FieldDefinition> getSerialFieldDefinitions(ClassLoader classLoader,TypeDefinition type_def)
             throws ClassNotFoundException {
+        Integer hashCode=ClassUtil.DEFAULT_HASHCODE;
+        if(classLoader!=null){
+            hashCode=classLoader.hashCode();
+        }
         Class clazz=type_def.runtime_class;
         String cache_key=clazz.getName();//缓存Key
         Map<String,Class> parameter_type_corresponds=type_def.parameter_type_corresponds;
@@ -38,13 +44,13 @@ public class CopyableFieldsCache {
                 cache_key+="#"+entry.getValue().getName();
             }
         }
-        Map<String, FieldDefinition> serial_fd_map = FIELDS_CACHE.get(cache_key); // 返回结果Map
+        Map<String, FieldDefinition> serial_fd_map = FIELDS_CACHE.get(hashCode,cache_key); // 返回结果Map
         if (ObjectUtils.anyNull(serial_fd_map)) {
             synchronized (CopyableFieldsCache.class) {
-                serial_fd_map = FIELDS_CACHE.get(cache_key);
+                serial_fd_map = FIELDS_CACHE.get(hashCode,cache_key);
                 if (ObjectUtils.anyNull(serial_fd_map)) {
                     Collection<Field> all_dest_fields_list =
-                            ClassUtil.getAllFieldsCollection(clazz); // 目标类所有字段
+                            ClassUtil.getAllFieldsCollection(classLoader,clazz); // 目标类所有字段
                     if (ObjectUtils.isEmpty(all_dest_fields_list)) {
                         log.warn("当前类[" + clazz.getName() + "]未包含任何字段.");
                     }
@@ -67,7 +73,7 @@ public class CopyableFieldsCache {
                         serial_fd_map = new HashMap<>();
                     }
 
-                    FIELDS_CACHE.put(cache_key, serial_fd_map);
+                    FIELDS_CACHE.put(hashCode,cache_key, serial_fd_map);
                 }
             }
         }
