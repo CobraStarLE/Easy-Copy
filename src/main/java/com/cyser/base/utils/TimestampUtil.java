@@ -1,6 +1,8 @@
 package com.cyser.base.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -11,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+@Slf4j
 public class TimestampUtil {
 
     private TimestampUtil() {}
@@ -457,6 +460,10 @@ public class TimestampUtil {
     public static LocalDateTime toLocalDateTime(
             String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns)
             throws ParseException {
+        if(StringUtils.isBlank(formatTimeStr)){
+            log.warn("要转换的时间格式字符串为空，停止转换。");
+            return null;
+        }
         FastDateFormatPattern pattern = getFastDateFormatPattern(patterns);
         LocalDateTime ldt;
         DateTimeFormatter df = DateTimeFormatter.ofPattern(pattern.getFormatPattern());
@@ -663,7 +670,7 @@ public class TimestampUtil {
         /**
          * 11位数字时间戳，精确到毫秒
          */
-        PURE_UNIX_TIME_FORMAT("11111111111"),
+        PURE_UNIX_TIME_FORMAT("1111111111111"),
 
         /**
          * ISO带T的日期时间格式，精确到秒
@@ -724,12 +731,27 @@ public class TimestampUtil {
         /**
          * 通用分隔符为横杠“-”的日期时间格式，精确到分钟
          */
-        NORM_DATETIME_MINUTE_PATTERN("yyyy-MM-dd HH:mm"),
+        NORM_DATETIME_HENGSU_MINUTE_PATTERN("yyyy-MM-dd HH:mm"),
+
+        /**
+         * 通用分隔符为横杠“-”的日期时间格式，精确到秒
+         */
+        NORM_DATETIME_HENGSU_SECOND_PATTERN("yyyy-MM-dd HH:mm:ss"),
 
         /**
          * 通用分隔符为斜杠“/”的日期时间格式，精确到分钟
          */
-        NORM_DATETIME_MINUTE_PATTERN2("yyyy/MM/dd HH:mm"),
+        NORM_DATETIME_SLASH_MINUTE_PATTERN("yyyy/MM/dd HH:mm"),
+
+        /**
+         * 通用分隔符为斜杠“/”的日期时间格式，精确到秒
+         */
+        NORM_DATETIME_SLASH_SECOND_PATTERN("yyyy/MM/dd HH:mm:ss"),
+
+        /**
+         * 通用分隔符为斜杠“/”的日期时间格式，精确到秒
+         */
+        NORM_DATETIME_SLASH_SECOND_PATTERN2("yyyy/MM/dd H:mm:ss"),
 
         /**
          * 纯日期时间格式，精确到秒
