@@ -188,6 +188,16 @@ public class TimestampUtil {
         return localDateTime.format(DateTimeFormatter.ofPattern(pattern.getFormatPattern()));
     }
 
+    public static String format(String from_format_str,FastDateFormatPattern from_pattern,FastDateFormatPattern to_pattern) throws ParseException {
+        if(from_pattern==null||to_pattern==null){
+            log.error("请输入");
+            throw new RuntimeException("from_pattern or to_pattern is null");
+        }
+
+        LocalDateTime localDateTime = toLocalDateTime(from_format_str, from_pattern);
+        return format(localDateTime,to_pattern);
+    }
+
     /**
      * 获取当前的时间格式字符串
      *
@@ -751,7 +761,7 @@ public class TimestampUtil {
         /**
          * 通用分隔符为斜杠“/”的日期时间格式，精确到秒
          */
-        NORM_DATETIME_SLASH_SECOND_PATTERN2("yyyy/MM/dd H:mm:ss"),
+        NORM_DATETIME_SLASH_SECOND_PATTERN2("yyyy/M/d H:m:s"),
 
         /**
          * 纯日期时间格式，精确到秒
