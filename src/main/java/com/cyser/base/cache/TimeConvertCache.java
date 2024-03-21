@@ -1,6 +1,7 @@
 package com.cyser.base.cache;
 
 import com.cyser.base.bean.FieldDefinition;
+import com.cyser.base.enums.TimeMode;
 import com.cyser.base.function.TernaryFunction;
 import com.cyser.base.utils.TimestampUtil;
 import com.google.common.collect.HashBasedTable;
@@ -24,24 +25,25 @@ public class TimeConvertCache {
         time_method_table.put(
                 LocalDate.class,
                 LocalDateTime.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toLocalDate((LocalDateTime) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getLocalDate((LocalDateTime) src_val));
         time_method_table.put(
                 LocalDate.class,
                 Date.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toLocalDate((Date) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getLocalDate((Date) src_val));
         time_method_table.put(
                 LocalDate.class,
                 Long.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toLocalDate((Long) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getLocalDate((Long) src_val));
         time_method_table.put(
                 LocalDate.class,
                 String.class,
                 (src_fd, dest_fd, src_val) -> {
                     try {
-                        if (!src_fd.isTime)
+                        if (!src_fd.isTime) {
                             throw new RuntimeException(
                                     "目标对象字段[" + src_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
-                        return TimestampUtil.toLocalDate((String) src_val, src_fd.timeFormat);
+                        }
+                        return TimestampUtil.getLocalDate((String) src_val, src_fd.timeFormat);
                     }
                     catch (ParseException e) {
                         throw new RuntimeException(e);
@@ -51,24 +53,25 @@ public class TimeConvertCache {
         time_method_table.put(
                 LocalDateTime.class,
                 LocalDate.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toLocalDateTime((LocalDate) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getLocalDateTime((LocalDate) src_val, dest_fd.timeMode));
         time_method_table.put(
                 LocalDateTime.class,
                 Date.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toLocalDateTime((Date) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getLocalDateTime((Date) src_val));
         time_method_table.put(
                 LocalDateTime.class,
                 Long.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toLocalDateTime((Long) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getLocalDateTime((Long) src_val));
         time_method_table.put(
                 LocalDateTime.class,
                 String.class,
                 (src_fd, dest_fd, src_val) -> {
                     try {
-                        if (!src_fd.isTime)
+                        if (!src_fd.isTime) {
                             throw new RuntimeException(
                                     "目标对象字段[" + src_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
-                        return TimestampUtil.toLocalDateTime((String) src_val, src_fd.timeFormat);
+                        }
+                        return TimestampUtil.getLocalDateTime((String) src_val, src_fd.timeFormat);
                     }
                     catch (ParseException e) {
                         throw new RuntimeException(e);
@@ -78,22 +81,23 @@ public class TimeConvertCache {
         time_method_table.put(
                 Date.class,
                 LocalDate.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toDate((LocalDate) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getDate((LocalDate) src_val,dest_fd.timeMode));
         time_method_table.put(
                 Date.class,
                 LocalDateTime.class,
-                (src_fd, dest_fd, src_val) -> TimestampUtil.toDate((LocalDateTime) src_val));
+                (src_fd, dest_fd, src_val) -> TimestampUtil.getDate((LocalDateTime) src_val));
         time_method_table.put(
-                Date.class, Long.class, (src_fd, dest_fd, src_val) -> TimestampUtil.toDate((Long) src_val));
+                Date.class, Long.class, (src_fd, dest_fd, src_val) -> TimestampUtil.getDate((Long) src_val));
         time_method_table.put(
                 Date.class,
                 String.class,
                 (src_fd, dest_fd, src_val) -> {
                     try {
-                        if (!src_fd.isTime)
+                        if (!src_fd.isTime) {
                             throw new RuntimeException(
                                     "目标对象字段[" + src_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
-                        return TimestampUtil.toDate((String) src_val, src_fd.timeFormat);
+                        }
+                        return TimestampUtil.getDate((String) src_val, src_fd.timeFormat);
                     }
                     catch (ParseException e) {
                         throw new RuntimeException(e);
@@ -118,11 +122,12 @@ public class TimeConvertCache {
                 String.class,
                 (src_fd, dest_fd, src_val) -> {
                     try {
-                        if (!src_fd.isTime)
+                        if (!src_fd.isTime) {
                             throw new RuntimeException(
                                     "目标对象字段[" + src_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
+                        }
                         return TimestampUtil.getUnixTimeStamp(
-                                (String) src_val, TimestampUtil.TimeMode.CURRENT, src_fd.timeFormat);
+                                (String) src_val, src_fd.timeFormat);
                     }
                     catch (ParseException e) {
                         throw new RuntimeException(e);
@@ -134,36 +139,40 @@ public class TimeConvertCache {
                 String.class,
                 LocalDate.class,
                 (src_fd, dest_fd, src_val) -> {
-                    if (!dest_fd.isTime)
+                    if (!dest_fd.isTime) {
                         throw new RuntimeException(
                                 "目标对象字段[" + dest_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
-                    return TimestampUtil.format((LocalDate) src_val, dest_fd.timeFormat);
+                    }
+                    return TimestampUtil.format((LocalDate) src_val,dest_fd.timeMode, dest_fd.timeFormat);
                 });
         time_method_table.put(
                 String.class,
                 LocalDateTime.class,
                 (src_fd, dest_fd, src_val) -> {
-                    if (!dest_fd.isTime)
+                    if (!dest_fd.isTime) {
                         throw new RuntimeException(
                                 "目标对象字段[" + dest_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
+                    }
                     return TimestampUtil.format((LocalDateTime) src_val, dest_fd.timeFormat);
                 });
         time_method_table.put(
                 String.class,
                 Date.class,
                 (src_fd, dest_fd, src_val) -> {
-                    if (!dest_fd.isTime)
+                    if (!dest_fd.isTime) {
                         throw new RuntimeException(
                                 "目标对象字段[" + dest_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
+                    }
                     return TimestampUtil.format((Date) src_val, dest_fd.timeFormat);
                 });
         time_method_table.put(
                 String.class,
                 Long.class,
                 (src_fd, dest_fd, src_val) -> {
-                    if (!dest_fd.isTime)
+                    if (!dest_fd.isTime) {
                         throw new RuntimeException(
                                 "目标对象字段[" + dest_fd.field.getName() + "]不是日期字符串,解决方案:在该字段上加上@TimeFormat");
+                    }
                     return TimestampUtil.format((Long) src_val, dest_fd.timeFormat);
                 });
     }

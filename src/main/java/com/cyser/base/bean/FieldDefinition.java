@@ -1,7 +1,9 @@
 package com.cyser.base.bean;
 
+import com.cyser.base.annotations.Timemode;
 import com.cyser.base.enums.DataTypeEnum;
-import com.cyser.base.utils.TimestampUtil;
+import com.cyser.base.enums.FastDateFormatPattern;
+import com.cyser.base.enums.TimeMode;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.lang.reflect.Field;
@@ -20,7 +22,9 @@ public class FieldDefinition extends TypeDefinition {
      */
     public Class[] parameter_Type_classes;
 
-    public TimestampUtil.FastDateFormatPattern timeFormat;
+    public FastDateFormatPattern timeFormat;
+
+    public TimeMode timeMode;
 
     /**
      * 是否是时间类型
@@ -43,7 +47,9 @@ public class FieldDefinition extends TypeDefinition {
     public Map<Class, EnumInfo> enumInfos;
 
     public DataTypeEnum getData_type(Class id) {
-        if (isEnum(id)) return DataTypeEnum.Enum;
+        if (isEnum(id)) {
+            return DataTypeEnum.Enum;
+        }
         return data_type;
     }
 

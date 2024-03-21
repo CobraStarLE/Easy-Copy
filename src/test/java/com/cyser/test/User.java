@@ -1,7 +1,7 @@
 package com.cyser.test;
 
 import com.cyser.base.annotations.TimeFormat;
-import com.cyser.base.utils.TimestampUtil;
+import com.cyser.base.enums.FastDateFormatPattern;
 
 import java.util.Date;
 import java.util.List;
@@ -16,7 +16,7 @@ public class User<K, V> implements Smile, Cry {
         this.age = age;
     }
 
-    @TimeFormat(value = TimestampUtil.FastDateFormatPattern.CN_DATE_FORMAT)
+    @TimeFormat(value = FastDateFormatPattern.CN_DATE_FORMAT)
     public String id;
     public String name;
     public Date birth;

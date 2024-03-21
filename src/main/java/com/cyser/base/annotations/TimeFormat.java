@@ -1,6 +1,6 @@
 package com.cyser.base.annotations;
 
-import com.cyser.base.utils.TimestampUtil;
+import com.cyser.base.enums.FastDateFormatPattern;
 
 import java.lang.annotation.*;
 
@@ -9,6 +9,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface TimeFormat {
 
-    TimestampUtil.FastDateFormatPattern value() default
-            TimestampUtil.FastDateFormatPattern.ISO_DATETIME_FORMAT;
+    FastDateFormatPattern value() default
+            FastDateFormatPattern.ISO_DATETIME_FORMAT;
 }

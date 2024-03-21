@@ -113,8 +113,9 @@ public class BeanUtil {
 
     public static Object parsePrimitiveOrWrapperOrStringType(Object _f_src_val,Class _dest_clazz){
         if (Character.class.isAssignableFrom(_dest_clazz)) {
-            if (String.valueOf(_f_src_val).length() > 1)
+            if (String.valueOf(_f_src_val).length() > 1) {
                 throw new RuntimeException("数据长度大于一，无法给char或者Character类型赋值!");
+            }
             return Character.valueOf((char)(_f_src_val));
         } else if (Short.class.isAssignableFrom(_dest_clazz)) {
             return Short.valueOf(String.valueOf(_f_src_val));

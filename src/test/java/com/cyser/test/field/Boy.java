@@ -2,7 +2,7 @@ package com.cyser.test.field;
 
 import com.cyser.base.annotations.TimeFormat;
 import com.cyser.base.bean.Copyable;
-import com.cyser.base.utils.TimestampUtil;
+import com.cyser.base.enums.FastDateFormatPattern;
 
 import java.util.List;
 
@@ -18,6 +18,6 @@ public class Boy implements Copyable<Boy> {
 
     public Long cells;
 
-    @TimeFormat(value = TimestampUtil.FastDateFormatPattern.CN_DATE_FORMAT)
+    @TimeFormat(value = FastDateFormatPattern.CN_DATE_FORMAT)
     public String birth;
 }

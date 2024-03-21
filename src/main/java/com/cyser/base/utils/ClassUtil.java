@@ -2,12 +2,14 @@ package com.cyser.base.utils;
 
 import com.cyser.base.annotations.EnumFormat;
 import com.cyser.base.annotations.TimeFormat;
+import com.cyser.base.annotations.Timemode;
 import com.cyser.base.bean.EnumInfo;
 import com.cyser.base.bean.FieldDefinition;
 import com.cyser.base.bean.TypeDefinition;
 import com.cyser.base.classloader.ByteBuddyClassLoader;
 import com.cyser.base.enums.ClassTypeEnum;
 import com.cyser.base.enums.DataTypeEnum;
+import com.cyser.base.enums.TimeMode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.*;
@@ -441,10 +443,20 @@ public class ClassUtil {
                 && field.getAnnotation(TimeFormat.class) != null)) {
             fd.isTime = true;
             TimeFormat timeFormat = field.getAnnotation(TimeFormat.class);
-            if (timeFormat != null) fd.timeFormat = timeFormat.value();
+            if (timeFormat != null) {
+                fd.timeFormat = timeFormat.value();
+            }
+            Timemode timeMode = field.getAnnotation(Timemode.class);
+            if (timeMode != null) {
+                fd.timeMode = timeMode.value();
+            }else{
+                fd.timeMode=TimeMode.CURRENT;
+            }
         }
         // 判断是否是可序列化字段
-        if (!isSerializableField(field)) fd.isSerializable = false;
+        if (!isSerializableField(field)) {
+            fd.isSerializable = false;
+        }
         // 解析枚举
         EnumFormat[] enumFormats=field.getAnnotationsByType(EnumFormat.class);
         Map<Class,EnumInfo> enumInfos=new HashMap();

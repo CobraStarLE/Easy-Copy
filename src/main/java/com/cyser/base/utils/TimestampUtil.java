@@ -1,5 +1,7 @@
 package com.cyser.base.utils;
 
+import com.cyser.base.enums.FastDateFormatPattern;
+import com.cyser.base.enums.TimeMode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +11,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import java.text.ParseException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -16,26 +19,36 @@ import java.util.TimeZone;
 @Slf4j
 public class TimestampUtil {
 
-    private TimestampUtil() {}
+    private TimestampUtil() {
+    }
+
+    public static Long getUnixTimeStamp(TimeMode... timeMode) {
+        if (ObjectUtils.isNotEmpty(timeMode)) {
+            TimeMode _timeMode = timeMode[0];
+            Calendar calendar = getCalendar(_timeMode);
+            return getUnixTimeStamp(calendar);
+        } else {
+            return Instant.now().toEpochMilli();
+        }
+    }
 
     /**
      * 得到Unix时间戳，精确到毫秒
      *
-     * <p>如果参数为空，则获取当前时间
-     *
-     * @param localDateTimes
      * @return
      */
-    public static Long getUnixTimeStamp(LocalDateTime... localDateTimes) {
-        ZoneId zoneId = getZoneId();
-        LocalDateTime localDateTime = getLocalDateTime(zoneId, localDateTimes);
-        return getUnixTimeStamp(zoneId, localDateTime);
+    public static Long getUnixTimeStamp(LocalDateTime localDateTime, ZoneId... zoneId) {
+        ZonedDateTime zdt = getZoneDateTime(localDateTime, zoneId);
+        return getUnixTimeStamp(zdt);
     }
 
-    public static Long getUnixTimeStamp(Date date, ZoneId... zoneIds) {
-        ZoneId zoneId = getZoneId(zoneIds);
-        LocalDateTime localDateTime = toLocalDateTime(date, zoneId);
-        return getUnixTimeStamp(zoneId, localDateTime);
+    public static Long getUnixTimeStamp(ZonedDateTime zdt) {
+        return zdt.toInstant().toEpochMilli();
+    }
+
+    public static Long getUnixTimeStamp(Date date, ZoneId... zoneId) {
+        ZonedDateTime zdt = getZoneDateTime(date, zoneId);
+        return getUnixTimeStamp(zdt);
     }
 
     public static Long getUnixTimeStamp(LocalDate ld, ZoneId... zoneIds) {
@@ -44,37 +57,14 @@ public class TimestampUtil {
 
     public static Long getUnixTimeStamp(
             LocalDate ld, int hour, int minute, int second, ZoneId... zoneIds) {
-        ZoneId zoneId = getZoneId(zoneIds);
-        LocalDateTime localDateTime = toLocalDateTime(ld, hour, minute, second);
-        return getUnixTimeStamp(zoneId, localDateTime);
-    }
-
-    public static Long getUnixTimeStamp(ZoneId zoneId, LocalDateTime... localDateTime) {
-        LocalDateTime _localDateTime = getLocalDateTime(zoneId, localDateTime);
-        ZonedDateTime zdt = _localDateTime.atZone(zoneId);
-        return zdt.toInstant().toEpochMilli();
-    }
-
-    /**
-     * 得到Unix时间戳，精确到毫秒
-     *
-     * @param timeMode             如果指定timeMode，则会对sourceLocalDateTime的时分秒重写,
-     *                             <p>支持 ZERO_ZERO-00:00:00
-     *                             <p>TWENTY_THREE-23:59:59
-     *                             <p>CURRENT-当前时间,如果为null，默认为当前的时间
-     * @param sourceLocalDateTimes 指定的时间,如果为null,则为当前时间
-     * @return
-     */
-    public static Long getUnixTimeStamp(TimeMode timeMode, LocalDateTime... sourceLocalDateTimes) {
-        LocalDateTime sourceLocalDateTime = getLocalDateTime(null, sourceLocalDateTimes);
-        LocalDateTime targetLocalDateTime = setHHmmss(sourceLocalDateTime, timeMode);
-        return getUnixTimeStamp(targetLocalDateTime);
+        LocalDateTime localDateTime = getLocalDateTime(ld, hour, minute, second);
+        return getUnixTimeStamp(localDateTime, zoneIds);
     }
 
     public static Long getUnixTimeStamp(
             int year, int month, int day, int hour, int minute, int second, ZoneId... zoneIds) {
-        LocalDateTime ldt = getLocalDateTime(year, month, day, hour, minute, second, zoneIds);
-        return getUnixTimeStamp(ldt);
+        ZonedDateTime zdt = getZoneDateTime(year, month, day, hour, minute, second, zoneIds);
+        return getUnixTimeStamp(zdt);
     }
 
     public static Long getUnixTimeStamp(
@@ -83,6 +73,524 @@ public class TimestampUtil {
         return getUnixTimeStamp(ldt);
     }
 
+    public static Long getUnixTimeStamp(Calendar calendar, ZoneId... zoneId) {
+        ZonedDateTime zdt = getZoneDateTime(calendar, zoneId);
+        return getUnixTimeStamp(zdt);
+    }
+
+    public static Long getUnixTimeStamp(
+            String formatTimeStr,FastDateFormatPattern pattern,ZoneId... zoneId)
+            throws ParseException {
+        LocalDateTime ldt = getLocalDateTime(formatTimeStr,pattern, zoneId);
+        return getUnixTimeStamp(ldt,zoneId);
+    }
+
+    public static LocalDateTime getLocalDateTime(TimeMode... timeMode) {
+        Long unixTime=getUnixTimeStamp(timeMode);
+        return getLocalDateTime(unixTime);
+    }
+
+    public static LocalDateTime getLocalDateTime(Instant instant, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        return instant.atZone(_zoneId).toLocalDateTime();
+    }
+
+    public static LocalDateTime getLocalDateTime(long unixTime, ZoneId... zoneId) {
+        Instant instant = Instant.ofEpochMilli(unixTime);
+        ZoneId _zoneId = getZoneId(zoneId);
+        return LocalDateTime.ofInstant(instant, _zoneId);
+    }
+
+
+    public static LocalDateTime getLocalDateTime(Date date, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        ZonedDateTime zdt = date.toInstant().atZone(_zoneId);
+        return zdt.toLocalDateTime();
+    }
+
+    public static LocalDateTime getLocalDateTime(LocalDate ld, int hour, int minute, int second) {
+        return LocalDateTime.of(ld, LocalTime.of(hour, minute, second));
+    }
+
+    public static LocalDateTime getLocalDateTime(LocalDate ld, TimeMode timeMode,ZoneId... zoneId) {
+        LocalTime localTime=getLocalTime(timeMode, zoneId);
+        return LocalDateTime.of(ld, localTime);
+    }
+
+
+    public static LocalDateTime getLocalDateTime(
+            int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
+        Calendar calendar = getCalendar(year, month, day, timeMode, zoneIds);
+        return getLocalDateTime(calendar, zoneIds);
+    }
+
+    public static LocalDateTime getLocalDateTime(Calendar calendar, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        return calendar.getTime().toInstant().atZone(_zoneId).toLocalDateTime();
+    }
+
+    public static LocalDateTime getLocalDateTime(
+            int year, int month, int day, int hour, int minute, int second, ZoneId... zoneIds) {
+        ZoneId zoneId = getZoneId(zoneIds);
+        Calendar calendar = getCalendar(year, month, day, hour, minute, second, zoneIds);
+        return getLocalDateTime(calendar, zoneId);
+    }
+
+    public static LocalDateTime getLocalDateTime(ZoneId ...zoneId){
+        ZonedDateTime zdt = getZoneDateTime(zoneId);
+        return getLocalDateTime(zdt);
+    }
+
+
+    public static LocalDateTime getLocalDateTime(ZonedDateTime zdt){
+        return zdt.toLocalDateTime();
+    }
+
+    public static LocalDateTime getLocalDateTime(
+            String formatTimeStr,FastDateFormatPattern pattern,ZoneId... zoneId)
+            throws ParseException {
+        if(StringUtils.isBlank(formatTimeStr)){
+            log.warn("要转换的时间格式字符串为空，停止转换。");
+            return null;
+        }
+        LocalDateTime ldt;
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(pattern.getFormatPattern());
+        // 当格式为年月日时，特殊处理为年月日时分秒格式
+        switch (pattern) {
+            case PURE_UNIX_TIME_FORMAT:
+                ldt = getLocalDateTime(Long.valueOf(formatTimeStr), zoneId);
+                break;
+            case ISO_DATE_FORMAT:
+            case PURE_DATE_FORMAT:
+            case CN_DATE_FORMAT:
+                LocalDate localDate = LocalDate.parse(formatTimeStr, df);
+                ldt = localDate.atStartOfDay();
+                break;
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
+                Date date = DateUtils.parseDateStrictly(formatTimeStr, pattern.getFormatPattern());
+                return getLocalDateTime(date.getTime(), zoneId);
+            default:
+                ldt = LocalDateTime.parse(formatTimeStr, df);
+                break;
+        }
+        return ldt;
+    }
+
+    public static LocalTime getLocalTime(TimeMode timeMode, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        switch (timeMode) {
+            case ZERO_ZERO:
+                return LocalTime.of(0, 0, 0);
+            case TWENTY_THREE:
+                return LocalTime.of(23, 59, 59);
+            default:
+                return LocalTime.now(_zoneId);
+        }
+    }
+
+    public static ZonedDateTime getZoneDateTime(LocalDateTime localDateTime, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        return localDateTime.atZone(_zoneId);
+    }
+
+    public static ZonedDateTime getZoneDateTime( ZoneId... zoneId) {
+        Long unixTime=getUnixTimeStamp();
+        return getZoneDateTime(unixTime,zoneId);
+    }
+
+    public static ZonedDateTime getZoneDateTime(TimeMode timeMode, ZoneId... zoneId) {
+        Long unixTime=getUnixTimeStamp(timeMode);
+        return getZoneDateTime(unixTime,zoneId);
+    }
+
+    public static ZonedDateTime getZoneDateTime(long unixTime, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        Instant instant = Instant.ofEpochMilli(unixTime);
+        return instant.atZone(_zoneId);
+    }
+
+    public static ZonedDateTime getZoneDateTime(Date date, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        return date.toInstant().atZone(_zoneId);
+    }
+
+    public static ZonedDateTime getZoneDateTime(Calendar calendar, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        return calendar.getTime().toInstant().atZone(_zoneId);
+    }
+
+    public static ZonedDateTime getZoneDateTime(
+            int year, int month, int day, int hour, int minute, int second, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        Calendar calendar = getCalendar(year, month, day, hour, minute, second, _zoneId);
+        return getZoneDateTime(calendar, _zoneId);
+    }
+
+    public static Calendar getCalendar(ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        return Calendar.getInstance(TimeZone.getTimeZone(_zoneId));
+    }
+
+    public static Calendar getCalendar(LocalDateTime localDateTime, ZoneId... zoneId) {
+       Date date = getDate(localDateTime, zoneId);
+       return getCalendar(date, zoneId);
+    }
+
+    public static Calendar getCalendar(long unixTime, ZoneId... zoneId) {
+        Date date = getDate(unixTime);
+        ZoneId _zoneId = getZoneId(zoneId);
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(_zoneId));
+        cal.setTime(date);
+        return cal;
+    }
+
+    public static Calendar getCalendar(TimeMode timeMode, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(_zoneId));
+        setHHmmss(calendar, timeMode);
+        return calendar;
+    }
+
+    public static Calendar getCalendar(
+            int year, int month, int day, int hour, int minute, int second, ZoneId... zoneIds) {
+        ZoneId zoneId = getZoneId(zoneIds);
+        Calendar calendar = getCalendar(zoneId);
+        setYYYYMMDD(calendar, year, month, day);
+        setHHmmss(calendar, hour, minute, second);
+        return calendar;
+    }
+
+    public static Calendar getCalendar(Date date, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(_zoneId));
+        cal.setTime(date);
+        return cal;
+    }
+
+    public static Calendar getCalendar(
+            int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
+        ZoneId zoneId = getZoneId(zoneIds);
+        Calendar calendar = getCalendar(zoneId);
+        setYYYYMMDD(calendar, year, month, day);
+        setHHmmss(calendar, timeMode);
+        return calendar;
+    }
+
+    public static Calendar getCalendar(
+            LocalDate ld, TimeMode timeMode, ZoneId... zoneIds) {
+        ZoneId zoneId = getZoneId(zoneIds);
+        Calendar calendar = getCalendar(zoneId);
+        setYYYYMMDD(calendar, ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth());
+        setHHmmss(calendar, timeMode);
+        return calendar;
+    }
+
+
+    public static Date getDate(ZoneId ...zoneId){
+        if(ObjectUtils.isEmpty(zoneId)){
+            return new Date();
+        }
+        Calendar calendar=getCalendar(zoneId);
+        return getDate(calendar);
+    }
+
+    public static Date getDate(long unixTime){
+        return new Date(unixTime);
+    }
+
+    public static Date getDate(TimeMode timeMode, ZoneId... zoneId){
+        Calendar calendar=getCalendar(timeMode,zoneId);
+        return getDate(calendar);
+    }
+
+
+    public static Date getDate(LocalDateTime ldt, ZoneId... zoneId){
+        ZonedDateTime zdt = getZoneDateTime(ldt,zoneId);
+        return getDate(zdt);
+    }
+
+    public static Date getDate(ZonedDateTime zdt){
+        return Date.from(zdt.toInstant());
+    }
+
+    public static Date getDate(Calendar calendar){
+        return calendar.getTime();
+    }
+
+    public static Date getDate(
+            int year, int month, int day, int hour, int minute, int second, ZoneId... zoneIds) {
+        Calendar calendar = getCalendar(year, month, day, hour, minute, second, zoneIds);
+        return getDate(calendar);
+    }
+
+    public static Date getDate(
+            int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
+        Calendar calendar = getCalendar(year, month, day, timeMode, zoneIds);
+        return getDate(calendar);
+    }
+
+    public static Date getDate(
+            LocalDate ld, TimeMode timeMode, ZoneId... zoneIds) {
+        Calendar calendar = getCalendar(ld, timeMode, zoneIds);
+        return getDate(calendar);
+    }
+
+    public static Date getDate(
+            String formatTimeStr,FastDateFormatPattern pattern,ZoneId... zoneId)
+            throws ParseException {
+        LocalDateTime ldt = getLocalDateTime(formatTimeStr,pattern, zoneId);
+        return getDate(ldt,zoneId);
+    }
+
+
+    public static LocalDate getLocalDate(ZoneId ...zoneId){
+        ZonedDateTime zdt=getZoneDateTime(zoneId);
+        return getLocalDate(zdt);
+    }
+
+    public static LocalDate getLocalDate(long unixTime,ZoneId ... zoneId){
+        ZonedDateTime zdt = getZoneDateTime(unixTime, zoneId);
+        return getLocalDate(zdt);
+    }
+
+    public static LocalDate getLocalDate(ZonedDateTime zdt){
+        return zdt.toLocalDate();
+    }
+
+    public static LocalDate getLocalDate(LocalDateTime ldt, ZoneId... zoneId){
+        ZonedDateTime zdt = getZoneDateTime(ldt,zoneId);
+        return getLocalDate(zdt);
+    }
+
+    public static LocalDate getLocalDate(Calendar calendar, ZoneId... zoneId){
+        ZonedDateTime zdt = getZoneDateTime(calendar,zoneId);
+        return getLocalDate(zdt);
+    }
+
+    public static LocalDate getLocalDate(
+            int year, int month, int day, ZoneId... zoneId) {
+        ZonedDateTime zdt = getZoneDateTime(year,month,day,0,0,0,zoneId);
+        return getLocalDate(zdt);
+    }
+
+    public static LocalDate getLocalDate(Date date, ZoneId... zoneId) {
+        Instant instant = getInstant(date);
+        ZoneId _zoneId = getZoneId(zoneId);
+        LocalDate ld = instant.atZone(_zoneId).toLocalDate();
+        return ld;
+    }
+
+    public static LocalDate getLocalDate(
+            String formatTimeStr,FastDateFormatPattern pattern,ZoneId... zoneId)
+            throws ParseException {
+        LocalDateTime ldt = getLocalDateTime(formatTimeStr,pattern, zoneId);
+        return getLocalDate(ldt,zoneId);
+    }
+
+    public static Instant getInstant(long unixTime){
+        return Instant.ofEpochMilli(unixTime);
+    }
+
+    public static Instant getInstant(Date date){
+        return date.toInstant();
+    }
+
+    public static Instant getInstant(LocalDateTime ldt,ZoneId... zoneId){
+        ZoneId _zoneId = getZoneId(zoneId);
+        ZoneOffset zoneOffset = OffsetDateTime.now(_zoneId).getOffset();
+        return ldt.toInstant(zoneOffset);
+    }
+
+    public static Instant getInstant(
+            String formatTimeStr,FastDateFormatPattern pattern,ZoneId... zoneId) throws ParseException {
+        LocalDateTime ldt = getLocalDateTime(formatTimeStr,pattern, zoneId);
+        return getInstant(ldt,zoneId);
+    }
+
+    public static String format(long unixTime, FastDateFormatPattern pattern) {
+        switch (pattern) {
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
+                return DateFormatUtils.format(unixTime, pattern.getFormatPattern());
+        }
+
+        LocalDateTime localDateTime = getLocalDateTime(unixTime);
+        return localDateTime.format(DateTimeFormatter.ofPattern(pattern.getFormatPattern()));
+    }
+
+    public static String format(String from_format_str, FastDateFormatPattern from_pattern, FastDateFormatPattern to_pattern) throws ParseException {
+        if(from_pattern==null||to_pattern==null){
+            throw new RuntimeException("from_pattern or to_pattern is null");
+        }
+
+        LocalDateTime ldt = getLocalDateTime(from_format_str, from_pattern);
+        return format(ldt,to_pattern);
+    }
+
+    public static String format(LocalDateTime localDateTime, FastDateFormatPattern pattern) {
+        switch (pattern) {
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
+                return DateFormatUtils.format(getUnixTimeStamp(localDateTime), pattern.getFormatPattern());
+        }
+
+        return localDateTime.format(DateTimeFormatter.ofPattern(pattern.getFormatPattern()));
+    }
+
+    public static String format(LocalDate ld, TimeMode timeMode, FastDateFormatPattern pattern, ZoneId... zoneId) {
+        LocalDateTime localDateTime = getLocalDateTime(ld,timeMode,zoneId);
+        return format(localDateTime, pattern);
+    }
+
+    public static String format(Date date,FastDateFormatPattern pattern, ZoneId... zoneId) {
+        LocalDateTime localDateTime = getLocalDateTime(date,zoneId);
+        return format(localDateTime, pattern);
+    }
+
+    public static long plusYear(long unixTime, int years){
+        Instant instant = getInstant(unixTime);
+        plusYear(instant,years);
+        // 转换回时间戳（毫秒）
+        return instant.toEpochMilli();
+    }
+
+    public static long plusMonth(long unixTime, int months){
+        Instant instant =getInstant(unixTime);
+        plusMonth(instant,months);
+        // 转换回时间戳（毫秒）
+        return instant.toEpochMilli();
+    }
+
+    public static long plusDay(long unixTime, int days){
+        return unixTime+days*24*3600*1000L;
+    }
+
+    public static long plusHour(long unixTime, int hours){
+        return unixTime+hours*3600*1000L;
+    }
+
+    public static long plusMinute(long unixTime, int minutes){
+        return unixTime + minutes*60*1000L;
+    }
+
+    public static long plusSecond(long unixTime, int seconds){
+        return unixTime + seconds*1000L;
+    }
+
+    public static Instant plusYear(Instant instant, int years){
+        instant.plus(years, ChronoUnit.YEARS);
+        return instant;
+    }
+
+    public static Instant plusMonth(Instant instant, int months){
+        instant.plus(months, ChronoUnit.MONTHS);
+        return instant;
+    }
+
+    public static Instant plusDay(Instant instant, int days){
+        instant.plus(days, ChronoUnit.DAYS);
+        return instant;
+    }
+
+    public static Instant plusHour(Instant instant, int hours){
+        instant.plus(hours, ChronoUnit.HOURS);
+        return instant;
+    }
+
+    public static Instant plusMinute(Instant instant, int minutes){
+        instant.plus(minutes, ChronoUnit.MINUTES);
+        return instant;
+    }
+
+    public static Instant plusSecond(Instant instant, int seconds){
+        instant.plus(seconds, ChronoUnit.SECONDS);
+        return instant;
+    }
+
+
+    public static Calendar plusYear(Calendar calendar, int years){
+        calendar.add(Calendar.YEAR, years);
+        return calendar;
+    }
+
+    public static Calendar plusMonth(Calendar calendar, int months){
+        calendar.add(Calendar.MONTH, months);
+        return calendar;
+    }
+
+    public static Calendar plusDay(Calendar calendar, int days){
+        calendar.add(Calendar.DATE, days);
+        return calendar;
+    }
+
+    public static Calendar plusHour(Calendar calendar, int hours){
+        calendar.add(Calendar.HOUR, hours);
+        return calendar;
+    }
+
+    public static Calendar plusMinute(Calendar calendar, int minutes){
+        calendar.add(Calendar.MINUTE, minutes);
+        return calendar;
+    }
+
+    public static Calendar plusSecond(Calendar calendar, int seconds){
+        calendar.add(Calendar.SECOND, seconds);
+        return calendar;
+    }
+
+    public static LocalDateTime plusYear(LocalDateTime ldt, int years,ZoneId... zoneId){
+        Instant instant=getInstant(ldt,zoneId);
+        plusYear(instant,years);
+        return getLocalDateTime(instant,zoneId);
+    }
+
+    public static LocalDateTime plusMonth(LocalDateTime ldt, int months,ZoneId... zoneId){
+        Instant instant=getInstant(ldt,zoneId);
+        plusMonth(instant,months);
+        return getLocalDateTime(instant,zoneId);
+    }
+
+    public static LocalDateTime plusDay(LocalDateTime ldt, int days,ZoneId... zoneId){
+        Instant instant=getInstant(ldt,zoneId);
+        plusDay(instant,days);
+        return getLocalDateTime(instant,zoneId);
+    }
+
+    public static LocalDateTime plusHour(LocalDateTime ldt, int hours,ZoneId... zoneId){
+        Instant instant=getInstant(ldt,zoneId);
+        plusHour(instant,hours);
+        return getLocalDateTime(instant,zoneId);
+    }
+
+    public static LocalDateTime plusMinute(LocalDateTime ldt, int minutes,ZoneId... zoneId){
+        Instant instant=getInstant(ldt,zoneId);
+        plusMinute(instant,minutes);
+        return getLocalDateTime(instant,zoneId);
+    }
+
+    public static LocalDateTime plusSecond(LocalDateTime ldt, int seconds,ZoneId... zoneId){
+        Instant instant=getInstant(ldt,zoneId);
+        plusSecond(instant,seconds);
+        return getLocalDateTime(instant,zoneId);
+    }
+
+    public static LocalDate plusYear(LocalDate ld, int years){
+        LocalDate new_ld=ld.plusYears(years);
+        return new_ld;
+    }
+
+    public static LocalDate plusMonth(LocalDate ld, int months){
+        LocalDate new_ld=ld.plusMonths(months);
+        return new_ld;
+    }
+
+    public static LocalDate plusDay(LocalDate ld, int days){
+        LocalDate new_ld=ld.plusDays(days);
+        return new_ld;
+    }
+
+
     /**
      * 判断指定的时间是否是在当天之中
      *
@@ -90,12 +598,13 @@ public class TimestampUtil {
      * @return true: 是 ，false:否
      */
     public static boolean duringCurrDay(long time) {
-        LocalDateTime todayZeroLDT = getCurrDateTime(TimeMode.ZERO_ZERO);
-        LocalDateTime tomorrowZeroLDT = getPlusDay(todayZeroLDT, 1);
+        LocalDateTime todayZeroLDT = getLocalDateTime(TimeMode.ZERO_ZERO);
+        LocalDateTime tomorrowZeroLDT = plusDay(todayZeroLDT, 1);
         Long startTime = getUnixTimeStamp(todayZeroLDT);
         Long endTime = getUnixTimeStamp(tomorrowZeroLDT);
         return during(time, startTime, endTime);
     }
+
 
     /**
      * 判断指定的时间是否在指定的两个时间之中之中
@@ -116,8 +625,7 @@ public class TimestampUtil {
             if (time >= startTime && time <= endTime) {
                 return true;
             }
-        }
-        else {
+        } else {
             if (time >= startTime && time < endTime) {
                 return true;
             }
@@ -127,473 +635,22 @@ public class TimestampUtil {
     }
 
     /**
-     * 返回当前时间与当天结束之间相隔的时间（毫秒）
-     *
-     * @return
+     * 根据指定的年月日设置年月日
      */
-    public static long distanceCurrDay() {
-        LocalDateTime todayZeroLDT = getCurrDateTime(TimeMode.ZERO_ZERO);
-        LocalDateTime tomorrowZeroLDT = getPlusDay(todayZeroLDT, 1);
-        Long startTime = getUnixTimeStamp();
-        Long endTime = getUnixTimeStamp(tomorrowZeroLDT);
-        return endTime - startTime;
+    private static void setYYYYMMDD(Calendar calendar, int year, int month, int day) {
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+        calendar.set(Calendar.DATE, day);
     }
 
     /**
-     * 把Unix时间戳转为时间格式字符串
-     *
-     * @param unixTime
-     * @param pattern
-     * @param zoneIds
-     * @return
+     * 根据指定的时分秒设置时分秒
      */
-    public static String format(long unixTime, FastDateFormatPattern pattern, ZoneId... zoneIds) {
-        if (pattern == FastDateFormatPattern.PURE_UNIX_TIME_FORMAT) {
-            return String.valueOf(unixTime);
-        }
-        LocalDateTime localDateTime = toLocalDateTime(unixTime, zoneIds);
-        return format(localDateTime, pattern);
-    }
-
-    /**
-     * 把时间格式字符串转为Unix时间戳
-     *
-     * @param formatTimeStr
-     * @param patterns
-     * @return
-     */
-    public static Long getUnixTimeStamp(
-            String formatTimeStr, TimeMode timeMode, FastDateFormatPattern... patterns)
-            throws ParseException {
-        FastDateFormatPattern pattern = getFastDateFormatPattern(patterns);
-        if (pattern == FastDateFormatPattern.PURE_DATETIME_PATTERN) return Long.valueOf(formatTimeStr);
-        LocalDateTime ldt = toLocalDateTime(formatTimeStr, patterns);
-        return getUnixTimeStamp(timeMode, ldt);
-    }
-
-    /**
-     * 把LocalDateTime转为时间格式字符串
-     *
-     * @param localDateTime
-     * @param pattern
-     * @return
-     */
-    public static String format(LocalDateTime localDateTime, FastDateFormatPattern pattern) {
-        switch (pattern) {
-            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
-            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
-                return DateFormatUtils.format(getUnixTimeStamp(localDateTime), pattern.getFormatPattern());
-        }
-
-        return localDateTime.format(DateTimeFormatter.ofPattern(pattern.getFormatPattern()));
-    }
-
-    public static String format(String from_format_str,FastDateFormatPattern from_pattern,FastDateFormatPattern to_pattern) throws ParseException {
-        if(from_pattern==null||to_pattern==null){
-            log.error("请输入");
-            throw new RuntimeException("from_pattern or to_pattern is null");
-        }
-
-        LocalDateTime localDateTime = toLocalDateTime(from_format_str, from_pattern);
-        return format(localDateTime,to_pattern);
-    }
-
-    /**
-     * 获取当前的时间格式字符串
-     *
-     * @param patterns
-     * @return
-     */
-    public static String format(FastDateFormatPattern... patterns) {
-        LocalDateTime localDateTime = getCurrDateTime();
-        FastDateFormatPattern pattern = FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT;
-        if (ObjectUtils.isNotEmpty(patterns)) {
-            pattern = patterns[0];
-        }
-        return localDateTime.format(DateTimeFormatter.ofPattern(pattern.getFormatPattern()));
-    }
-
-    /**
-     * 把Unix时间戳转为LocalDateTime
-     *
-     * @param unixTime
-     * @param zoneIds
-     * @return
-     */
-    public static LocalDateTime toLocalDateTime(long unixTime, ZoneId... zoneIds) {
-        Instant instant = Instant.ofEpochMilli(unixTime);
-        ZoneId zoneId = getZoneId(zoneIds);
-        return LocalDateTime.ofInstant(instant, zoneId);
-    }
-
-    /**
-     * 如果 localDateTimes不为空，则返回localDateTimes[0],
-     *
-     * <p>否则返回指定ZoneId的当前时间
-     *
-     * @param zoneId         如果为空，则默认为时区UTC+8
-     * @param localDateTimes
-     * @return
-     */
-    public static LocalDateTime getLocalDateTime(ZoneId zoneId, LocalDateTime... localDateTimes) {
-        if (localDateTimes != null && localDateTimes.length > 0) {
-            return localDateTimes[0];
-        }
-        if (zoneId == null) {
-            zoneId = getZoneId();
-        }
-
-        return LocalDateTime.now(zoneId);
-    }
-
-    public static LocalDateTime getLocalDateTime(
-            int year, int month, int day, TimeMode timeMode, ZoneId... zoneIds) {
-        ZoneId zoneId = getZoneId(zoneIds);
-        Calendar calendar = getCalendar(zoneId);
-        setYYYYMMDD(calendar, year, month, day);
-        setHHmmss(calendar, timeMode);
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    public static LocalDateTime getLocalDateTime(
-            int year, int month, int day, int hour, int minute, int second, ZoneId... zoneIds) {
-        ZoneId zoneId = getZoneId(zoneIds);
-        Calendar calendar = getCalendar(zoneId);
-        setYYYYMMDD(calendar, year, month, day);
-        setHHmmss(calendar, hour, minute, second);
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    /**
-     * 得到当前时间
-     *
-     * @param zoneIds
-     * @return
-     */
-    public static LocalDateTime getCurrDateTime(ZoneId... zoneIds) {
-        ZoneId zoneId;
-        if (zoneIds == null || zoneIds.length == 0) {
-            zoneId = getZoneId();
-        }
-        else {
-            zoneId = zoneIds[0];
-        }
-        return getLocalDateTime(zoneId);
-    }
-
-    /**
-     * 得到当前时间
-     *
-     * @param zoneIds
-     * @return
-     */
-    public static LocalDateTime getCurrDateTime(TimeMode timeMode, ZoneId... zoneIds) {
-        ZoneId zoneId;
-        if (zoneIds == null || zoneIds.length == 0) {
-            zoneId = getZoneId();
-        }
-        else {
-            zoneId = zoneIds[0];
-        }
-        LocalDateTime currLDT = getLocalDateTime(zoneId);
-        return setHHmmss(currLDT, timeMode);
-    }
-
-    /**
-     * 获取指定的时区
-     *
-     * @param zoneIds 如果为空，则获取UTC+8时区
-     * @return
-     */
-    public static ZoneId getZoneId(ZoneId... zoneIds) {
-        if (zoneIds != null && zoneIds.length > 0) {
-            return zoneIds[0];
-        }
-        return ZoneId.of("Asia/Shanghai");
-    }
-
-    public static FastDateFormatPattern getFastDateFormatPattern(FastDateFormatPattern... patterns) {
-        FastDateFormatPattern pattern;
-        if (patterns == null || patterns.length == 0) {
-            pattern = FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT;
-        }
-        else {
-            pattern = patterns[0];
-        }
-        return pattern;
-    }
-
-    /**
-     * 根据指定的时间模式设置时分秒
-     *
-     * @param localDateTime
-     * @param timeMode      ZERO_ZERO-00:00:00
-     *                      <p>TWENTY_THREE-23:59:59
-     *                      <p>CURRENT-当前时间,如果为null，默认为当前的时间
-     */
-    public static LocalDateTime setHHmmss(LocalDateTime localDateTime, TimeMode... timeMode) {
-        if (localDateTime != null) {
-            if (timeMode != null && timeMode.length > 0) {
-                ZoneId zoneId = getZoneId();
-                Calendar calendar = toCalendar(localDateTime, zoneId);
-                setHHmmss(calendar, timeMode[0]);
-                LocalDateTime result = toLocalDateTime(calendar, zoneId);
-                return result;
-            }
-        }
-        return localDateTime;
-    }
-
-    /**
-     * 当前时间加上指定的月数
-     *
-     * @param localDateTime
-     * @param months
-     * @return
-     */
-    public static LocalDateTime getPlusMonth(
-            LocalDateTime localDateTime, int months, TimeMode... timeMode) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(localDateTime, zoneId);
-        calendar.add(Calendar.MONTH, months);
-        if (timeMode != null && timeMode.length > 0) {
-            setHHmmss(calendar, timeMode[0]);
-        }
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    /**
-     * 当前时间加上指定的年数
-     *
-     * @param localDateTime
-     * @param years
-     * @return
-     */
-    public static LocalDateTime getPlusYear(
-            LocalDateTime localDateTime, int years, TimeMode... timeMode) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(localDateTime, zoneId);
-        calendar.add(Calendar.YEAR, years);
-        if (timeMode != null && timeMode.length > 0) {
-            setHHmmss(calendar, timeMode[0]);
-        }
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    /**
-     * 当前时间加上指定的天数
-     *
-     * @param localDateTime
-     * @param days
-     * @return
-     */
-    public static LocalDateTime getPlusDay(
-            LocalDateTime localDateTime, int days, TimeMode... timeMode) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(localDateTime, zoneId);
-        calendar.add(Calendar.DATE, days);
-        if (timeMode != null && timeMode.length > 0) {
-            setHHmmss(calendar, timeMode[0]);
-        }
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    /**
-     * 当前时间加上指定的小时
-     *
-     * @param localDateTime
-     * @param hours
-     * @return
-     */
-    public static LocalDateTime getPlusHour(LocalDateTime localDateTime, int hours) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(localDateTime, zoneId);
-        calendar.add(Calendar.HOUR, hours);
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    /**
-     * 修改日期时间上的字段，比如把1992-03-27设置成2000-03-27就可以如下调用: <br>
-     * </br> {@code LocalDateTime ldt=TimestampUtil.getLocalDateTime(1992,3,27,0,0,0);} * <br>
-     * </br> {@code TimestampUtil.setDateTimeField(old_ldt, Calendar.YEAR,2000);} * <br>
-     * </br> {@code System.out.println(TimestampUtil.format(ldt,
-     * TimestampUtil.FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT));//输出2000-03-27 00:00:00}
-     *
-     * @param localDateTime
-     * @param calendarField
-     * @param amount
-     * @return
-     */
-    public static LocalDateTime setDateTimeField(
-            LocalDateTime localDateTime, final int calendarField, final int amount) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(localDateTime, zoneId);
-        calendar.set(calendarField, amount);
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    public static Long setDateTimeField(
-            Long unixTimestamp, final int calendarField, final int amount) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(unixTimestamp);
-        calendar.set(calendarField, amount);
-        return calendar.getTimeInMillis();
-    }
-
-    public static Calendar toCalendar(LocalDateTime localDateTime, ZoneId zoneId) {
-        Calendar calendar = getCalendar(zoneId);
-        Date date = Date.from(localDateTime.atZone(zoneId).toInstant());
-        calendar.setLenient(false);
-        calendar.setTime(date);
-        return calendar;
-    }
-
-    public static Calendar toCalendar(Long unixTimestamp) {
-        final Calendar c = Calendar.getInstance();
-        c.setLenient(false);
-        c.setTimeInMillis(unixTimestamp);
-        return c;
-    }
-
-    public static Calendar getCalendar(ZoneId zoneId) {
-        return Calendar.getInstance(TimeZone.getTimeZone(zoneId));
-    }
-
-    /**
-     * 把时间格式字符串转为LocalDateTime
-     *
-     * @param formatTimeStr
-     * @param zoneId
-     * @param patterns
-     * @return
-     */
-    public static LocalDateTime toLocalDateTime(
-            String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns)
-            throws ParseException {
-        if(StringUtils.isBlank(formatTimeStr)){
-            log.warn("要转换的时间格式字符串为空，停止转换。");
-            return null;
-        }
-        FastDateFormatPattern pattern = getFastDateFormatPattern(patterns);
-        LocalDateTime ldt;
-        DateTimeFormatter df = DateTimeFormatter.ofPattern(pattern.getFormatPattern());
-        // 当格式为年月日时，特殊处理为年月日时分秒格式
-        switch (pattern) {
-            case PURE_UNIX_TIME_FORMAT:
-                ldt = toLocalDateTime(Long.valueOf(formatTimeStr), zoneId);
-                break;
-            case ISO_DATE_FORMAT:
-            case PURE_DATE_FORMAT:
-            case CN_DATE_FORMAT:
-                LocalDate localDate = LocalDate.parse(formatTimeStr, df);
-                ldt = localDate.atStartOfDay();
-                break;
-            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
-            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
-                Date date = DateUtils.parseDateStrictly(formatTimeStr, pattern.getFormatPattern());
-                return toLocalDateTime(date.getTime(), zoneId);
-            default:
-                ldt = LocalDateTime.parse(formatTimeStr, df);
-                break;
-        }
-        return ldt;
-    }
-
-    /**
-     * 把时间格式字符串转为LocalDateTime
-     *
-     * @param formatTimeStr
-     * @param patterns
-     * @return
-     */
-    public static LocalDateTime toLocalDateTime(
-            String formatTimeStr, FastDateFormatPattern... patterns) throws ParseException {
-        return toLocalDateTime(formatTimeStr, getZoneId(), patterns);
-    }
-
-    public static LocalDateTime toLocalDateTime(Calendar calendar, ZoneId zoneId) {
-        return calendar.getTime().toInstant().atZone(zoneId).toLocalDateTime();
-    }
-
-    public static LocalDateTime toLocalDateTime(Date date, ZoneId... zoneIds) {
-        ZoneId zoneId = getZoneId(zoneIds);
-        return date.toInstant().atZone(zoneId).toLocalDateTime();
-    }
-
-    public static LocalDateTime toLocalDateTime(LocalDate ld) {
-        return ld.atTime(0, 0, 0);
-    }
-
-    public static LocalDateTime toLocalDateTime(LocalDate ld, int hour, int minute, int second) {
-        return ld.atTime(hour, minute, second);
-    }
-
-    public static Date toDate(String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns)
-            throws ParseException {
-        LocalDateTime ldt = toLocalDateTime(formatTimeStr, zoneId, patterns);
-        return toDate(ldt, zoneId);
-    }
-
-    public static Date toDate(String formatTimeStr, FastDateFormatPattern... patterns)
-            throws ParseException {
-        return toDate(formatTimeStr, getZoneId(), patterns);
-    }
-
-    public static Date toDate(Long unixTimestamp, ZoneId... zoneIds) {
-
-        return new Date(unixTimestamp);
-    }
-
-    public static Date toDate(LocalDateTime ldt, ZoneId... zoneIds) {
-        ZoneId zoneId = getZoneId(zoneIds);
-        ZonedDateTime zonedDateTime = ldt.atZone(zoneId);
-        return Date.from(zonedDateTime.toInstant());
-    }
-
-    public static Date toDate(LocalDate ld, ZoneId... zoneIds) {
-        LocalDateTime ldt = toLocalDateTime(ld, 0, 0, 0);
-        return toDate(ldt, zoneIds);
-    }
-
-    public static Date toDate(LocalDate ld, int hour, int minute, int second, ZoneId... zoneIds) {
-        LocalDateTime ldt = toLocalDateTime(ld, hour, minute, second);
-        return toDate(ldt, zoneIds);
-    }
-
-    public static LocalDate toLocalDate(
-            String formatTimeStr, ZoneId zoneId, FastDateFormatPattern... patterns)
-            throws ParseException {
-        LocalDateTime ldt = toLocalDateTime(formatTimeStr, zoneId, patterns);
-        return ldt.toLocalDate();
-    }
-
-    public static LocalDate toLocalDate(long unixTimeStamp) {
-        LocalDateTime ldt = toLocalDateTime(unixTimeStamp);
-        return ldt.toLocalDate();
-    }
-
-    public static LocalDate toLocalDate(String formatTimeStr, FastDateFormatPattern... patterns)
-            throws ParseException {
-        return toLocalDate(formatTimeStr, getZoneId(), patterns);
-    }
-
-    public static LocalDate toLocalDate(LocalDateTime ldt) {
-        return ldt.toLocalDate();
-    }
-
-    public static LocalDate toLocalDate(Date date, ZoneId... zoneIds) {
-        LocalDateTime ldt = toLocalDateTime(date, zoneIds);
-        return toLocalDate(ldt);
-    }
-
-    public static String format(LocalDate ldt, FastDateFormatPattern pattern) {
-        LocalDateTime localDateTime = toLocalDateTime(ldt);
-        return format(localDateTime, pattern);
-    }
-
-    public static String format(Date ldt, FastDateFormatPattern pattern) {
-        LocalDateTime localDateTime = toLocalDateTime(ldt);
-        return format(localDateTime, pattern);
+    private static void setHHmmss(Calendar calendar, int hour, int minute, int second) {
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, second);
+        calendar.set(Calendar.MILLISECOND, 0);
     }
 
     /**
@@ -617,175 +674,36 @@ public class TimestampUtil {
         }
     }
 
-    /**
-     * 根据指定的时分秒设置时分秒
-     */
-    public static LocalDateTime setHHmmss(
-            LocalDateTime localDateTime, int hour, int minute, int second, int millisecond) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(localDateTime, zoneId);
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, second);
-        calendar.set(Calendar.MILLISECOND, millisecond);
-        return toLocalDateTime(calendar, zoneId);
-    }
 
     /**
-     * 根据指定的时分秒设置时分秒
-     */
-    private static void setHHmmss(Calendar calendar, int hour, int minute, int second) {
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, second);
-        calendar.set(Calendar.MILLISECOND, 0);
-    }
-
-    /**
-     * 根据指定的年月日设置年月日
-     */
-    public static LocalDateTime setYYYYMMDD(
-            LocalDateTime localDateTime, int year, int month, int day) {
-        ZoneId zoneId = getZoneId();
-        Calendar calendar = toCalendar(localDateTime, zoneId);
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month - 1);
-        calendar.set(Calendar.DATE, day);
-        return toLocalDateTime(calendar, zoneId);
-    }
-
-    /**
-     * 根据指定的年月日设置年月日
-     */
-    private static void setYYYYMMDD(Calendar calendar, int year, int month, int day) {
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month - 1);
-        calendar.set(Calendar.DATE, day);
-    }
-
-    /**
-     * ZERO_ZERO-00:00:00
+     * 获取指定的时区
      *
-     * <p>TWENTY_THREE-23:59:59
-     *
-     * <p>CURRENT-当前时间,如果为null，默认为当前的时间
+     * @param zoneIds 如果为空，则获取UTC+8时区
+     * @return
      */
-    public enum TimeMode {
-        ZERO_ZERO,
-        TWENTY_THREE,
-        CURRENT;
+    public static ZoneId getZoneId(ZoneId... zoneIds) {
+        if (zoneIds != null && zoneIds.length > 0) {
+            return zoneIds[0];
+        }
+        return ZoneId.of("Asia/Shanghai");
     }
 
-    public enum FastDateFormatPattern {
-        /**
-         * 11位数字时间戳，精确到毫秒
-         */
-        PURE_UNIX_TIME_FORMAT("1111111111111"),
-
-        /**
-         * ISO带T的日期时间格式，精确到秒
-         */
-        ISO_DATETIME_FORMAT("yyyy-MM-dd'T'HH:mm:ss"),
-
-        /**
-         * ISO带T的日期时间格式，精确到毫秒
-         */
-        ISO_DATETIME_ZONE_FORMAT("yyyy-MM-dd'T'HH:mm:ssXXX"),
-
-        /**
-         * ISO非带T的日期时间格式，精确到秒
-         */
-        ISO_DATETIME_NO_T_FORMAT("yyyy-MM-dd HH:mm:ss"),
-
-        /**
-         * ISO非带T的日期时间格式，精确到毫秒
-         */
-        ISO_DATETIME_ZONE_NO_T_FORMAT("yyyy-MM-dd HH:mm:ssXXX"),
-
-        /**
-         * ISO带T指定时区的日期时间格式，精确到秒
-         */
-        ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT("yyyy-MM-dd'T'HH:mm:ssZZ"),
-
-        /**
-         * ISO非带T指定时区的日期时间格式，精确到秒
-         */
-        ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT("yyyy-MM-dd HH:mm:ssZZ"),
-
-        /**
-         * ISO日期格式，精确到天
-         */
-        ISO_DATE_FORMAT("yyyy-MM-dd"),
-
-        /**
-         * ISO带T的时间格式，精确到秒
-         */
-        ISO_TIME_FORMAT("'T'HH:mm:ss"),
-
-        /**
-         * ISO带T指定时区的时间格式，精确到秒
-         */
-        ISO_TIME_TIME_ZONE_FORMAT("'T'HH:mm:ssZZ"),
-
-        /**
-         * ISO非带T的时间格式，精确到秒
-         */
-        ISO_TIME_NO_T_FORMAT("HH:mm:ss"),
-
-        /**
-         * ISO非带T指定时区的时间格式，精确到秒
-         */
-        ISO_TIME_NO_T_TIME_ZONE_FORMAT("HH:mm:ssZZ"),
-
-
-        /**
-         * 通用分隔符为横杠“-”的日期时间格式，精确到分钟
-         */
-        NORM_DATETIME_HENGSU_MINUTE_PATTERN("yyyy-MM-dd HH:mm"),
-
-        /**
-         * 通用分隔符为横杠“-”的日期时间格式，精确到秒
-         */
-        NORM_DATETIME_HENGSU_SECOND_PATTERN("yyyy-MM-dd HH:mm:ss"),
-
-        /**
-         * 通用分隔符为斜杠“/”的日期时间格式，精确到分钟
-         */
-        NORM_DATETIME_SLASH_MINUTE_PATTERN("yyyy/MM/dd HH:mm"),
-
-        /**
-         * 通用分隔符为斜杠“/”的日期时间格式，精确到秒
-         */
-        NORM_DATETIME_SLASH_SECOND_PATTERN("yyyy/MM/dd HH:mm:ss"),
-
-        /**
-         * 通用分隔符为斜杠“/”的日期时间格式，精确到秒
-         */
-        NORM_DATETIME_SLASH_SECOND_PATTERN2("yyyy/M/d H:m:s"),
-
-        /**
-         * 纯日期时间格式，精确到秒
-         */
-        PURE_DATETIME_PATTERN("yyyyMMddHHmmss"),
-
-        /**
-         * 纯日期格式
-         */
-        PURE_DATE_FORMAT("yyyyMMdd"),
-
-        /**
-         * 中国式日期时间格式
-         */
-        CN_DATE_FORMAT("yyyy年MM月dd日");
-
-        private String formatPattern;
-
-        FastDateFormatPattern(String formatPattern) {
-            this.formatPattern = formatPattern;
+    public static TimeMode getTimeMode(TimeMode... timeMode) {
+        if (timeMode != null && timeMode.length > 0) {
+            return timeMode[0];
         }
-
-        public String getFormatPattern() {
-            return formatPattern;
-        }
+        return TimeMode.CURRENT;
     }
+
+    public static FastDateFormatPattern getFastDateFormatPattern(FastDateFormatPattern... patterns) {
+        FastDateFormatPattern pattern;
+        if (patterns == null || patterns.length == 0) {
+            pattern = FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT;
+        }
+        else {
+            pattern = patterns[0];
+        }
+        return pattern;
+    }
+
 }
