@@ -15,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class TimestampUtil {
@@ -85,9 +86,9 @@ public class TimestampUtil {
         return getUnixTimeStamp(ldt,zoneId);
     }
 
-    public static LocalDateTime getLocalDateTime(TimeMode... timeMode) {
+    public static LocalDateTime getLocalDateTime(TimeMode timeMode,ZoneId ...zoneId) {
         Long unixTime=getUnixTimeStamp(timeMode);
-        return getLocalDateTime(unixTime);
+        return getLocalDateTime(unixTime, zoneId);
     }
 
     public static LocalDateTime getLocalDateTime(Instant instant, ZoneId... zoneId) {
@@ -197,6 +198,11 @@ public class TimestampUtil {
     public static ZonedDateTime getZoneDateTime( ZoneId... zoneId) {
         Long unixTime=getUnixTimeStamp();
         return getZoneDateTime(unixTime,zoneId);
+    }
+
+    public static ZonedDateTime getZoneDateTime(Instant instant, ZoneId... zoneId) {
+        ZoneId _zoneId = getZoneId(zoneId);
+        return instant.atZone(_zoneId);
     }
 
     public static ZonedDateTime getZoneDateTime(TimeMode timeMode, ZoneId... zoneId) {
@@ -428,6 +434,12 @@ public class TimestampUtil {
         return format(ldt,to_pattern);
     }
 
+    public static String format( FastDateFormatPattern pattern, TimeMode ... timeMode) {
+        long unixTime = getUnixTimeStamp(timeMode);
+        return format(unixTime, pattern);
+    }
+
+
     public static String format(LocalDateTime localDateTime, FastDateFormatPattern pattern) {
         switch (pattern) {
             case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
@@ -450,14 +462,14 @@ public class TimestampUtil {
 
     public static long plusYear(long unixTime, int years){
         Instant instant = getInstant(unixTime);
-        plusYear(instant,years);
+        instant=plusYear(instant,years);
         // 转换回时间戳（毫秒）
         return instant.toEpochMilli();
     }
 
     public static long plusMonth(long unixTime, int months){
         Instant instant =getInstant(unixTime);
-        plusMonth(instant,months);
+        instant=plusMonth(instant,months);
         // 转换回时间戳（毫秒）
         return instant.toEpochMilli();
     }
@@ -478,14 +490,41 @@ public class TimestampUtil {
         return unixTime + seconds*1000L;
     }
 
-    public static Instant plusYear(Instant instant, int years){
-        instant.plus(years, ChronoUnit.YEARS);
-        return instant;
+
+    public static ZonedDateTime plusYear(ZonedDateTime zdt, int years){
+        return zdt.plusYears(years);
     }
 
-    public static Instant plusMonth(Instant instant, int months){
-        instant.plus(months, ChronoUnit.MONTHS);
-        return instant;
+    public static ZonedDateTime plusMonth(ZonedDateTime zdt, int months){
+        return zdt.plusMonths(months);
+    }
+
+    public static ZonedDateTime plusDay(ZonedDateTime zdt, int days){
+        return zdt.plusDays(days);
+    }
+
+    public static ZonedDateTime plusHour(ZonedDateTime zdt, int hours){
+        return zdt.plusHours(hours);
+    }
+
+    public static ZonedDateTime plusMinute(ZonedDateTime zdt, int minutes){
+        return zdt.plusMinutes(minutes);
+    }
+
+    public static ZonedDateTime plusSecond(ZonedDateTime zdt, int seconds){
+        return zdt.plusSeconds(seconds);
+    }
+
+    public static Instant plusYear(Instant instant, int years,ZoneId ...zoneId){
+        ZonedDateTime zdt = getZoneDateTime(instant,zoneId);
+        zdt=plusYear(zdt,years);
+        return zdt.toInstant();
+    }
+
+    public static Instant plusMonth(Instant instant, int months,ZoneId ...zoneId){
+        ZonedDateTime zdt = getZoneDateTime(instant,zoneId);
+        zdt=plusMonth(zdt,months);
+        return zdt.toInstant();
     }
 
     public static Instant plusDay(Instant instant, int days){
@@ -539,39 +578,72 @@ public class TimestampUtil {
         return calendar;
     }
 
+    public static Date plusYear(Date date, int years,ZoneId ...zoneId){
+        ZonedDateTime zdt = getZoneDateTime(date,zoneId);
+        zdt=plusYear(zdt,years);
+        Instant instant = zdt.toInstant();
+        return Date.from(instant);
+    }
+
+    public static Date plusMonth(Date date, int months,ZoneId ...zoneId){
+        LocalDateTime ldt = getLocalDateTime(date,zoneId);
+        LocalDateTime ldt_new=plusMonth(ldt,months);
+        return getDate(ldt_new,zoneId);
+    }
+
+    public static Date plusDay(Date date, int days){
+        long unixTime = date.getTime()+ TimeUnit.DAYS.toMillis(days);
+        return new Date(unixTime);
+    }
+
+    public static Date plusHour(Date date, int hours){
+        long unixTime = date.getTime()+ TimeUnit.HOURS.toMillis(hours);
+        return new Date(unixTime);
+    }
+
+    public static Date plusMinute(Date date, int minutes){
+        long unixTime = date.getTime()+ TimeUnit.MINUTES.toMillis(minutes);
+        return new Date(unixTime);
+    }
+
+    public static Date plusSecond(Date date, int seconds){
+        long unixTime = date.getTime()+ TimeUnit.SECONDS.toMillis(seconds);
+        return new Date(unixTime);
+    }
+
     public static LocalDateTime plusYear(LocalDateTime ldt, int years,ZoneId... zoneId){
         Instant instant=getInstant(ldt,zoneId);
-        plusYear(instant,years);
+        instant=plusYear(instant,years);
         return getLocalDateTime(instant,zoneId);
     }
 
     public static LocalDateTime plusMonth(LocalDateTime ldt, int months,ZoneId... zoneId){
         Instant instant=getInstant(ldt,zoneId);
-        plusMonth(instant,months);
+        instant=plusMonth(instant,months);
         return getLocalDateTime(instant,zoneId);
     }
 
     public static LocalDateTime plusDay(LocalDateTime ldt, int days,ZoneId... zoneId){
         Instant instant=getInstant(ldt,zoneId);
-        plusDay(instant,days);
+        instant=plusDay(instant,days);
         return getLocalDateTime(instant,zoneId);
     }
 
     public static LocalDateTime plusHour(LocalDateTime ldt, int hours,ZoneId... zoneId){
         Instant instant=getInstant(ldt,zoneId);
-        plusHour(instant,hours);
+        instant=plusHour(instant,hours);
         return getLocalDateTime(instant,zoneId);
     }
 
     public static LocalDateTime plusMinute(LocalDateTime ldt, int minutes,ZoneId... zoneId){
         Instant instant=getInstant(ldt,zoneId);
-        plusMinute(instant,minutes);
+        instant=plusMinute(instant,minutes);
         return getLocalDateTime(instant,zoneId);
     }
 
     public static LocalDateTime plusSecond(LocalDateTime ldt, int seconds,ZoneId... zoneId){
         Instant instant=getInstant(ldt,zoneId);
-        plusSecond(instant,seconds);
+        instant=plusSecond(instant,seconds);
         return getLocalDateTime(instant,zoneId);
     }
 
