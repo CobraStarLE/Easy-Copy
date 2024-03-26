@@ -13,6 +13,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+      </profile>
+      <profile name="Annotation profile for easy-copy" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <option name="customOption" value="value" />
         <module name="easy-copy" />
       </profile>
     </annotationProcessing>
@@ -22,6 +28,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="cyser.main" options="--add-modules java.base" />
       <module name="cyser.test" options="--add-modules java.base" />
+      <module name="easy-copy" options="&quot;-AcustomOption=value -processor com.cyser.base.processor.ExclusiveAnnotationProcessor&quot;" />
     </option>
   </component>
 </project>

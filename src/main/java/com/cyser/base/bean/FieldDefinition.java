@@ -1,6 +1,5 @@
 package com.cyser.base.bean;
 
-import com.cyser.base.annotations.Timemode;
 import com.cyser.base.enums.DataTypeEnum;
 import com.cyser.base.enums.FastDateFormatPattern;
 import com.cyser.base.enums.TimeMode;
@@ -8,9 +7,11 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Map;
 
+/**
+ * @author wangjinsheng
+ */
 public class FieldDefinition extends TypeDefinition {
 
     public Field field;
@@ -31,15 +32,6 @@ public class FieldDefinition extends TypeDefinition {
      */
     public boolean isTime = false;
 
-    /**
-     * 是否可序列化
-     */
-    public boolean isSerializable = true;
-
-    /**
-     * 是否是枚举（判断依据：1、本身是枚举类，2、字段上有注解EnumFormat,并且enme_class不为空）
-     */
-    private final boolean isEnum = false;
 
     /**
      * 如果是枚举类的话，解析到的枚举信息
@@ -66,37 +58,14 @@ public class FieldDefinition extends TypeDefinition {
         return false;
     }
 
+    /**
+     * 是否是枚举（判断依据：1、本身是枚举类，2、字段上有注解EnumFormat,并且enme_class不为空）
+     */
     public EnumInfo getEnumInfo(Class id) {
         EnumInfo info = enumInfos.get(id);
         if (info == null) {
             info = enumInfos.get(this.field.getDeclaringClass());
         }
         return info;
-    }
-
-    @Override
-    public String toString() {
-        return "FieldDefinition{"
-                + "field="
-                + field
-                + ", type="
-                + raw_type
-                + ", genericType="
-                + genericType
-                + ", raw_Type_class="
-                + raw_Type_class
-                + ", parameter_Type_classes="
-                + Arrays.toString(parameter_Type_classes)
-                + ", isGeneric="
-                + isGeneric
-                + ", isPrimitive="
-                + isPrimitive
-                + ", isPrimitiveWrapper="
-                + isPrimitiveWrapper
-                + ", isTime="
-                + isTime
-                + ", isSerializable="
-                + isSerializable
-                + '}';
     }
 }
