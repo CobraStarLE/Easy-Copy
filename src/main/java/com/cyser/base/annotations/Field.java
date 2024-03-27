@@ -1,5 +1,7 @@
 package com.cyser.base.annotations;
 
+import com.cyser.base.enums.FastDateFormatPattern;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -7,5 +9,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Copy_Include {
+public @interface Field {
+    String aliasFor();
 }

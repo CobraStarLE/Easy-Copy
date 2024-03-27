@@ -14,8 +14,19 @@ import java.util.Map;
  */
 public class FieldDefinition extends TypeDefinition {
 
+    /**
+     * 字段简称，值为注解@Field的值，默认为字段名
+     */
+    public String alias;
+
+    /**
+     * 所代表字段Field
+     */
     public Field field;
 
+    /**
+     * 当字段类型为范型时，字段范型的泛型类型
+     */
     public Type genericType;
 
     /**
@@ -25,6 +36,9 @@ public class FieldDefinition extends TypeDefinition {
 
     public FastDateFormatPattern timeFormat;
 
+    /**
+     * 时间类型
+     */
     public TimeMode timeMode;
 
     /**
@@ -45,6 +59,9 @@ public class FieldDefinition extends TypeDefinition {
         return data_type;
     }
 
+    /**
+     * 是否是枚举（判断依据：1、本身是枚举类，2、字段上有注解EnumFormat,并且enme_class不为空）
+     */
     public boolean isEnum(Class id) {
         if (Enum.class.isAssignableFrom(this.runtime_class)) {
             return true;
@@ -58,9 +75,7 @@ public class FieldDefinition extends TypeDefinition {
         return false;
     }
 
-    /**
-     * 是否是枚举（判断依据：1、本身是枚举类，2、字段上有注解EnumFormat,并且enme_class不为空）
-     */
+
     public EnumInfo getEnumInfo(Class id) {
         EnumInfo info = enumInfos.get(id);
         if (info == null) {

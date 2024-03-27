@@ -1,7 +1,7 @@
 package com.cyser.test.type;
 
 import com.cyser.base.enums.ClassTypeEnum;
-import com.cyser.test.entity.Simple;
+import com.cyser.test.bean.Simple;
 
 public class TypeTest {
 

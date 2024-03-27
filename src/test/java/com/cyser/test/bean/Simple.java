@@ -1,4 +1,4 @@
-package com.cyser.test.entity;
+package com.cyser.test.bean;
 
 import lombok.Data;
 
