@@ -42,11 +42,6 @@
       <option name="url" value="https://repo.spring.io/release" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="company-repo" />
-      <option name="name" value="company" />
-      <option name="url" value="http://101.200.234.103:8081/repository/xingyu/" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="MavenRepo" />
       <option name="name" value="MavenRepo" />
       <option name="url" value="https://repo.maven.apache.org/maven2/" />

@@ -28,12 +28,12 @@ public class AnnotationUsageProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element element : roundEnv.getElementsAnnotatedWith(Field.class)) {
             if (element.getAnnotation(Field_Ignore.class) != null) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot use Copy_Include and Copy_Exclude together", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot use Copy_Include and Copy_Exclude together!!!", element);
             }
         }
         for (Element element : roundEnv.getElementsAnnotatedWith(Field_Ignore.class)) {
             if (element.getAnnotation(Field.class) != null) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot use Copy_Exclude and Copy_Include together", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot use Copy_Exclude and Copy_Include together!!!", element);
             }
         }
         return true;
