@@ -12,6 +12,7 @@ import java.text.ParseException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -41,6 +42,12 @@ public class TimestampUtil {
     public static Long getUnixTimeStamp(LocalDateTime localDateTime, ZoneId... zoneId) {
         ZonedDateTime zdt = getZoneDateTime(localDateTime, zoneId);
         return getUnixTimeStamp(zdt);
+    }
+
+    public static Long getUnixTimeStamp(Long unixTimeStamp, TimeMode timeMode, ZoneId... zoneId) {
+        Calendar calendar = getCalendar(unixTimeStamp,zoneId);
+        setHHmmss(calendar, timeMode);
+        return getUnixTimeStamp(calendar);
     }
 
     public static Long getUnixTimeStamp(ZonedDateTime zdt) {
@@ -661,6 +668,60 @@ public class TimestampUtil {
         LocalDate new_ld=ld.plusDays(days);
         return new_ld;
     }
+
+    /**
+     * 获取指定日期所在月的第一天0时0分0秒
+     * @param ld
+     * @return
+     */
+    public static LocalDate getStartOfMonth(LocalDate ld) {
+        return ld.with(TemporalAdjusters.firstDayOfMonth());
+    }
+
+    public static Calendar getStartOfMonth(Calendar calendar,TimeMode ... timeMode) {
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
+        TimeMode _timeMode=getTimeMode(timeMode);
+        setHHmmss(calendar,_timeMode);
+        return calendar;
+    }
+
+    public static Date getStartOfMonth(Date date,ZoneId ...zoneId) {
+        Calendar cal = getCalendar(date,zoneId);
+        return getDate(getStartOfMonth(cal));
+    }
+
+    public static Date getStartOfMonth(Date date,TimeMode timeMode,ZoneId ...zoneId) {
+        Calendar cal = getCalendar(date,zoneId);
+        return getDate(getStartOfMonth(cal,timeMode));
+    }
+
+    public static Long getStartOfMonth(Long unixTime,ZoneId ...zoneId) {
+        Calendar cal = getCalendar(unixTime,zoneId);
+        return getUnixTimeStamp(getStartOfMonth(cal));
+    }
+
+    public static Long getStartOfMonth(Long unixTime,TimeMode timeMode,ZoneId ...zoneId) {
+        Calendar cal = getCalendar(unixTime,zoneId);
+        return getUnixTimeStamp(getStartOfMonth(cal,timeMode));
+    }
+
+    /**
+     * 获取所在小时的0分0秒
+     * @param unixTime
+     * @return
+     */
+    public static long getStartOfHour(Long ... unixTime){
+        long _unixTime=0;
+        if(unixTime==null||unixTime.length==0){
+            _unixTime=getUnixTimeStamp();
+        }else{
+            _unixTime=unixTime[0];
+        }
+        LocalDateTime now = getLocalDateTime(_unixTime);
+        LocalDateTime currentTimeHourZeroed = now.truncatedTo(java.time.temporal.ChronoUnit.HOURS);
+        return getUnixTimeStamp(currentTimeHourZeroed);
+    }
+
 
 
     /**
