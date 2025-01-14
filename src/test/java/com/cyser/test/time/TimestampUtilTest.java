@@ -100,8 +100,14 @@ public class TimestampUtilTest {
         String str = TimestampUtil.format(serven_day_ago, FastDateFormatPattern.ISO_DATETIME_NO_T_FORMAT);
         System.out.println(str);
     }
+
+    public static void test14(){
+        String string = TimestampUtil.format(new Date(), FastDateFormatPattern.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_MILLISECONDS);
+        System.out.println(string);
+    }
     public static void main(String[] args) throws Exception {
-        test12();
-        test13();
+//        test12();
+//        test13();
+        test14();
     }
 }

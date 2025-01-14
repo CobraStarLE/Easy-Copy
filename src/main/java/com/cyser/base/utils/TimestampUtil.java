@@ -174,8 +174,11 @@ public class TimestampUtil {
                 LocalDate localDate = LocalDate.parse(formatTimeStr, df);
                 ldt = localDate.atStartOfDay();
                 break;
-            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
-            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
+
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_SECONDS:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_SECONDS:
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_MILLISECONDS:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_MILLISECONDS:
                 Date date = DateUtils.parseDateStrictly(formatTimeStr, pattern.getFormatPattern());
                 return getLocalDateTime(date.getTime(), zoneId);
             default:
@@ -219,8 +222,8 @@ public class TimestampUtil {
 
     public static ZonedDateTime getZoneDateTime(long unixTime, ZoneId... zoneId) {
         ZoneId _zoneId = getZoneId(zoneId);
-        Instant instant = Instant.ofEpochMilli(unixTime);
-        return instant.atZone(_zoneId);
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(unixTime), _zoneId);
+        return zonedDateTime;
     }
 
     public static ZonedDateTime getZoneDateTime(Date date, ZoneId... zoneId) {
@@ -401,8 +404,9 @@ public class TimestampUtil {
         return getLocalDate(ldt,zoneId);
     }
 
-    public static Instant getInstant(long unixTime){
-        return Instant.ofEpochMilli(unixTime);
+    public static Instant getInstant(long unixTime, ZoneId... zoneId){
+        ZonedDateTime zdt = getZoneDateTime(unixTime,zoneId);
+        return getInstant(zdt);
     }
 
     public static Instant getInstant(Date date){
@@ -415,6 +419,10 @@ public class TimestampUtil {
         return ldt.toInstant(zoneOffset);
     }
 
+    public static Instant getInstant(ZonedDateTime zdt){
+       return zdt.toInstant();
+    }
+
     public static Instant getInstant(
             String formatTimeStr,FastDateFormatPattern pattern,ZoneId... zoneId) throws ParseException {
         LocalDateTime ldt = getLocalDateTime(formatTimeStr,pattern, zoneId);
@@ -423,8 +431,10 @@ public class TimestampUtil {
 
     public static String format(long unixTime, FastDateFormatPattern pattern) {
         switch (pattern) {
-            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
-            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_SECONDS:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_SECONDS:
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_MILLISECONDS:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_MILLISECONDS:
                 return DateFormatUtils.format(unixTime, pattern.getFormatPattern());
         }
 
@@ -449,8 +459,10 @@ public class TimestampUtil {
 
     public static String format(LocalDateTime localDateTime, FastDateFormatPattern pattern) {
         switch (pattern) {
-            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT:
-            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT:
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_SECONDS:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_SECONDS:
+            case ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_MILLISECONDS:
+            case ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_MILLISECONDS:
                 return DateFormatUtils.format(getUnixTimeStamp(localDateTime), pattern.getFormatPattern());
         }
 
@@ -731,11 +743,9 @@ public class TimestampUtil {
      * @return true: 是 ，false:否
      */
     public static boolean duringCurrDay(long time) {
-        LocalDateTime todayZeroLDT = getLocalDateTime(TimeMode.ZERO_ZERO);
-        LocalDateTime tomorrowZeroLDT = plusDay(todayZeroLDT, 1);
-        Long startTime = getUnixTimeStamp(todayZeroLDT);
-        Long endTime = getUnixTimeStamp(tomorrowZeroLDT);
-        return during(time, startTime, endTime);
+        long today_zero=getUnixTimeStamp(time,TimeMode.ZERO_ZERO);
+        long tomorrow_zero=plusDay(today_zero, 1);
+        return during(time, today_zero, tomorrow_zero,false);
     }
 
 

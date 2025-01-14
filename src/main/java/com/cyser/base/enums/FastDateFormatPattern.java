@@ -29,12 +29,22 @@ public enum FastDateFormatPattern {
         /**
          * ISO带T指定时区的日期时间格式，精确到秒
          */
-        ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT("yyyy-MM-dd'T'HH:mm:ssZZ"),
+        ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_SECONDS("yyyy-MM-dd'T'HH:mm:ssZZ"),
 
         /**
          * ISO非带T指定时区的日期时间格式，精确到秒
          */
-        ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT("yyyy-MM-dd HH:mm:ssZZ"),
+        ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_SECONDS("yyyy-MM-dd HH:mm:ssZZ"),
+
+        /**
+         * ISO带T指定时区的日期时间格式，精确到毫秒
+         */
+        ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT_MILLISECONDS("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"),
+
+        /**
+         * ISO非带T指定时区的日期时间格式，精确到毫秒
+         */
+        ISO_8601_EXTENDED_DATETIME_NO_T_TIME_ZONE_FORMAT_MILLISECONDS("yyyy-MM-dd HH:mm:ss.SSSZZ"),
 
         /**
          * ISO日期格式，精确到天
