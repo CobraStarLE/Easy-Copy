@@ -44,6 +44,7 @@
         </dependency>
     </dependencies>
     <build>
+        <finalName>easy-copy</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -68,7 +69,39 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>2.0.2</version>
+                <executions>
+                   <!-- <execution>
+                        <id>company</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <serverId>xy-mirror</serverId>
+                            <includes>target/easy-copy.jar</includes>
+                            <url>http://101.200.234.103:8881/repository/maven-releases/</url>
+                        </configuration>
+                    </execution>-->
+                    <execution>
+                        <id>shard</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <serverId>itsc_release_maven_cn.ccccltd.srdc</serverId>
+                            <fromDir>${project.build.directory}</fromDir>
+                            <includes>${project.build.finalName}.jar</includes>
+                            <toDir>com/cyser/easy-copy/${project.version}</toDir>
+                            <url>http://devops.ccccltd.cn/pkg/itsc/maven/cn.ccccltd.srdc/release</url>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <distributionManagement>
