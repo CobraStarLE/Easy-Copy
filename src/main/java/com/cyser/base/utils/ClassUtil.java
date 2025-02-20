@@ -392,10 +392,9 @@ public class ClassUtil {
 
                 if (classType==ClassTypeEnum.TypeVariable) {//如果是List<V>这种
                     parameter_Type_classes[i] = parameter_type_corresponds.get(param_types[i].getTypeName());
-                }else if(classType==ClassTypeEnum.Class){//如果是List<Cat>这种
-                    parameter_Type_classes[i] = ClassUtils.getClass(param_types[i].getTypeName());
-                }else{
                     parameter_type_Defines[i] = parseType(parameter_Type_classes[i]);
+                }else{
+                    parameter_type_Defines[i] = parseType(param_types[i]);
                 }
             }
             fd.parameter_type_Defines=parameter_type_Defines;
