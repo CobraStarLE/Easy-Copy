@@ -16,6 +16,8 @@ public class Boy extends Sex {
 
     private String NAME;
 
+    private Integer age;
+
     public <E extends Boy> void test1(E e) {
 //        System.out.println(e.getName());
     }

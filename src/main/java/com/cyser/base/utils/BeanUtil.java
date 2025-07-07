@@ -29,7 +29,7 @@ public class BeanUtil {
     }
 
     public static Object copy(Object target, Object source, CopyParam... cp) {
-        if(ObjectUtils.isNotEmpty(target)&&ObjectUtils.isNotEmpty(source)){
+        if(ObjectUtils.allNotNull(target,source)){
             return copy(target, source, target.getClass(), source.getClass(), cp);
         }else{
             log.warn("请检查参数是否为空，停止复制！");
@@ -43,7 +43,7 @@ public class BeanUtil {
             return target;
         }
 
-        if(ObjectUtils.isEmpty(target)&&ObjectUtils.isEmpty(dest_clazz)){
+        if(ObjectUtils.allNull(target,dest_clazz)){
             throw new RuntimeException("参数target和dest_clazz不能同时为空，停止复制！");
         }
 
