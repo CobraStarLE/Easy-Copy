@@ -151,7 +151,7 @@ public class ClassUtil {
         Map<String, Field> map = FIELD_CACHE.get(hashCode,cache_key);
         if (map == null) {
             synchronized (ClassUtil.class){
-                map = FIELD_CACHE.get(hashCode,cache_key);
+                map = FIELD_CACHE.get(classLoader,cache_key);
                 if(map==null){
                     map=new HashMap<>();
                     Class<?> currentClass = clazz;

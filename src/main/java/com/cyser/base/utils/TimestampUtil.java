@@ -1,5 +1,6 @@
 package com.cyser.base.utils;
 
+import com.cyser.base.bean.TimeInfo;
 import com.cyser.base.enums.FastDateFormatPattern;
 import com.cyser.base.enums.TimeMode;
 import lombok.extern.slf4j.Slf4j;
@@ -848,5 +849,105 @@ public class TimestampUtil {
         }
         return pattern;
     }
+
+    /**
+     * 根据时间戳获取时间信息，考虑时区
+     * @param timestamp 毫秒级时间戳
+     * @param zoneId 时区，若为 null 则使用系统默认时区
+     * @return 封装时间信息的 TimeInfo 对象
+     */
+    public static TimeInfo getTimeInfo(long timestamp, ZoneId... zoneId) {
+        if (timestamp < 0) {
+            return null;
+        }
+        ZoneId _zoneId = getZoneId(zoneId);
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        LocalDateTime localDateTime = instant.atZone(_zoneId).toLocalDateTime();
+        return getTimeInfo(localDateTime);
+    }
+
+    /**
+     * 根据 java.util.Date 获取时间信息，考虑时区
+     * @param date java.util.Date 对象
+     * @param zoneId 时区，若为 null 则使用系统默认时区
+     * @return 封装时间信息的 TimeInfo 对象
+     */
+    public static TimeInfo getTimeInfo(Date date, ZoneId... zoneId) {
+        if (date == null) {
+            return null;
+        }
+        ZoneId _zoneId = getZoneId(zoneId);
+        LocalDateTime localDateTime = date.toInstant().atZone(_zoneId).toLocalDateTime();
+        return getTimeInfo(localDateTime);
+    }
+
+    /**
+     * 根据 java.time.Instant 获取时间信息，考虑时区
+     * @param instant java.time.Instant 对象
+     * @param zoneId 时区，若为 null 则使用系统默认时区
+     * @return 封装时间信息的 TimeInfo 对象
+     */
+    public static TimeInfo getTimeInfo(Instant instant, ZoneId... zoneId) {
+        if (instant == null) {
+            return null;
+        }
+        ZoneId _zoneId = getZoneId(zoneId);
+        LocalDateTime localDateTime = instant.atZone(_zoneId).toLocalDateTime();
+        return getTimeInfo(localDateTime);
+    }
+
+    /**
+     * 根据 java.time.LocalDateTime 获取时间信息
+     * @param localDateTime java.time.LocalDateTime 对象
+     * @return 封装时间信息的 TimeInfo 对象
+     */
+    public static TimeInfo getTimeInfo(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        TimeInfo timeInfo = new TimeInfo();
+        timeInfo.setYear(localDateTime.getYear());
+        timeInfo.setMonth(localDateTime.getMonthValue());
+        timeInfo.setDay(localDateTime.getDayOfMonth());
+        timeInfo.setHour(localDateTime.getHour());
+        timeInfo.setMinute(localDateTime.getMinute());
+        timeInfo.setSecond(localDateTime.getSecond());
+        timeInfo.setMillisecond(localDateTime.getNano() / 1000000);
+        timeInfo.setMicrosecond((localDateTime.getNano() / 1000) % 1000);
+        timeInfo.setNanosecond(localDateTime.getNano() % 1000);
+        return timeInfo;
+    }
+
+    /**
+     * 根据 java.time.ZonedDateTime 获取时间信息
+     * @param zonedDateTime java.time.ZonedDateTime 对象
+     * @return 封装时间信息的 TimeInfo 对象
+     */
+    public static TimeInfo getTimeInfo(ZonedDateTime zonedDateTime) {
+        if (zonedDateTime == null) {
+            return null;
+        }
+        LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+        return getTimeInfo(localDateTime);
+    }
+
+    /**
+     * 根据 java.util.Calendar 获取时间信息，考虑时区
+     * @param calendar java.util.Calendar 对象
+     * @param zoneId 时区，若为 null 则使用 calendar 自带时区
+     * @return 封装时间信息的 TimeInfo 对象
+     */
+    public static TimeInfo getTimeInfo(Calendar calendar, ZoneId... zoneId) {
+        if (calendar == null) {
+            return null;
+        }
+        ZoneId _zoneId = zoneId.length > 0 ? zoneId[0] : ZoneId.of(calendar.getTimeZone().getID());
+        Instant instant = calendar.toInstant();
+        LocalDateTime localDateTime = instant.atZone(_zoneId).toLocalDateTime();
+        return getTimeInfo(localDateTime);
+    }
+
+
+
 
 }
